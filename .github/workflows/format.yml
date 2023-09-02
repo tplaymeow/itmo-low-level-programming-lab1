@@ -17,6 +17,9 @@ jobs:
       working-directory: ${{github.workspace}}/build
       run: make format
 
+    - name: Clean build folder
+      run: rm -rf ${{github.workspace}}/build
+      
     - uses: stefanzweifel/git-auto-commit-action@v4
       with:
         commit_message: '[CI] format files'
