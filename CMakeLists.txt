@@ -5,3 +5,5 @@ set(CMAKE_C_STANDARD 11)
 
 add_subdirectory(database_library)
 add_subdirectory(database_app)
+
+include(format.cmake)
