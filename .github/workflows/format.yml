@@ -1,9 +1,11 @@
+name: Format files
+
 on:
   push:
     branches: [ "main" ]
 
 jobs:
-  build:
+  format:
     runs-on: ubuntu-latest
 
     steps:
