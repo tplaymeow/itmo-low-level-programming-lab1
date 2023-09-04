@@ -7,4 +7,4 @@ add_library(logger
         logger.h logger.c)
 
 include(../scripts/filename.cmake)
-define_filename_for_sources(logger)
+define_file_info(logger)

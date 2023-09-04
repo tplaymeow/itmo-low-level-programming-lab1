@@ -14,4 +14,4 @@ target_link_libraries(database_app
         logger)
 
 include(../scripts/filename.cmake)
-define_filename_for_sources(database_app)
+define_file_info(database_app)

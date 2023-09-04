@@ -7,4 +7,4 @@ add_library(database
         database_scalar.h database_scalar.c)
 
 include(../scripts/filename.cmake)
-define_filename_for_sources(database)
+define_file_info(database)
