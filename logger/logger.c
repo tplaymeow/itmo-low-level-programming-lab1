@@ -3,16 +3,22 @@
 
 #include "logger.h"
 
-static const char *logger_level_text[] = {
-    [LOGGER_DEBUG] = "DEBUG", [LOGGER_INFO] = "INFO"};
+static void print_log(const char *level, const char *target, const char *file,
+                      int line, const char *format, va_list arguments) {
+  printf("[%s]\t%s:%s:%d: ", level, target, file, line);
+  vprintf(format, arguments);
+  printf("\n");
+}
 
 void logger_log(enum logger_level level, const char *target, const char *file,
                 int line, const char *format, ...) {
-  const char *level_text = logger_level_text[level];
-  printf("[%s]\t%s:%s:%d: ", level_text, target, file, line);
-  va_list arguments;
-  va_start(arguments, format);
-  vprintf(format, arguments);
-  va_end(arguments);
-  printf("\n");
+  switch (level) {
+  case LOGGER_DEBUG: {
+    va_list arguments;
+    va_start(arguments, format);
+    print_log("DEBUG", target, file, line, format, arguments);
+    va_end(arguments);
+    break;
+  }
+  }
 }
