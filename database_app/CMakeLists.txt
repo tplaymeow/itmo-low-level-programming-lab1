@@ -8,10 +8,12 @@ add_executable(database_app
 
 include_directories(
         "../database"
-        "../logger")
+        "../logger"
+        "../paging")
 target_link_libraries(database_app
         database
-        logger)
+        logger
+        paging)
 
 include(../scripts/filename.cmake)
 define_file_info(database_app)

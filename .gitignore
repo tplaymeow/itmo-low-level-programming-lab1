@@ -1,3 +1,7 @@
 .idea
 cmake-build-*
 build/
+file.db
+.DS_Store
+.DS_Store
+.DS_Store

@@ -3,6 +3,7 @@
 //
 
 #include "database_attributes.h"
+
 #include <stdlib.h>
 
 struct database_attributes database_attributes_create(size_t count) {

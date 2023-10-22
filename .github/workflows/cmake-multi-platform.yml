@@ -52,5 +52,4 @@ jobs:
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
-        ${{ matrix.executable_path }} Timur
-        ${{ matrix.executable_path }} World
+        touch file.db && ${{ matrix.executable_path }}

@@ -3,9 +3,11 @@
 //
 
 #include "database_create_table_request.h"
+
+#include <stdlib.h>
+
 #include "database_attribute.h"
 #include "database_attributes.h"
-#include <stdlib.h>
 
 struct database_create_table_request
 database_create_table_request_create(const char *table_name,

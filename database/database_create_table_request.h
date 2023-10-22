@@ -5,9 +5,10 @@
 #ifndef ITMO_LOW_LEVEL_PROGRAMMING_LAB1_DATABASE_CREATE_TABLE_REQUEST_H
 #define ITMO_LOW_LEVEL_PROGRAMMING_LAB1_DATABASE_CREATE_TABLE_REQUEST_H
 
+#include <stddef.h>
+
 #include "database_attribute.h"
 #include "database_attributes.h"
-#include <stddef.h>
 
 struct database_create_table_request {
   const char *name;

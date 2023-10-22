@@ -1,39 +1,241 @@
-#include "database_create_table_request.h"
-#include "logger.h"
+#include <assert.h>
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-struct page_header {
-  uint64_t prev_page;
-  uint64_t next_page;
-};
+#include "database_create_table_request.h"
+#include "logger.h"
+#include "paging.h"
 
-struct pager_configuration {
-  uint64_t page_size;
-};
+static void print_stat(struct paging_pager *pager) {
+  void *data1 = NULL;
+  struct paging_read_result res1 =
+      paging_read_first(pager, PAGING_TYPE_1, &data1);
+  while (res1.success) {
+    debug("PL: %" PRIu64 "; CF: %" PRIu64 "; CL: %" PRIu64 "; NF: %" PRIu64,
+          res1.info.previous_last_page_number,
+          res1.info.current_first_page_number,
+          res1.info.current_last_page_number, res1.info.next_first_page_number);
+    free(data1);
+    res1 = paging_read_next(pager, res1.info, &data1);
+  }
 
-int main(int argc, char **argv) {
-  const char *file_name = "abc";
+  void *data2 = NULL;
+  struct paging_read_result res2 =
+      paging_read_first(pager, PAGING_TYPE_2, &data2);
+  while (res2.success) {
+    debug("PL: %" PRIu64 "; CF: %" PRIu64 "; CL: %" PRIu64 "; NF: %" PRIu64,
+          res2.info.previous_last_page_number,
+          res2.info.current_first_page_number,
+          res2.info.current_last_page_number, res2.info.next_first_page_number);
+    free(data2);
+    res2 = paging_read_next(pager, res2.info, &data2);
+  }
 
-  FILE *file = fopen(file_name, "wb");
-  const struct page_header header = {.prev_page = 1, .next_page = 5000};
-  fwrite(&header, sizeof(struct page_header), 1, file);
-
-  fclose(file);
-
-  FILE *file2 = fopen(file_name, "rb");
-  struct page_header header2;
-  fread(&header2, sizeof(struct page_header), 1, file2);
-
-  debug("%zu", header2.next_page);
-  debug("%zu", header2.prev_page);
+  void *data3 = NULL;
+  struct paging_read_result res3 =
+      paging_read_first(pager, PAGING_TYPE_3, &data3);
+  while (res3.success) {
+    debug("PL: %" PRIu64 "; CF: %" PRIu64 "; CL: %" PRIu64 "; NF: %" PRIu64,
+          res3.info.previous_last_page_number,
+          res3.info.current_first_page_number,
+          res3.info.current_last_page_number, res3.info.next_first_page_number);
+    free(data3);
+    res3 = paging_read_next(pager, res3.info, &data3);
+  }
 }
 
-struct pager {
-  size_t tables_root_offset;
-  size_t rows_root_offset;
-  size_t strings_root_offset;
-  size_t free_root_offset;
-};
+int main(int argc, char **argv) {
+  const char *file_name =
+      "/Users/tplaymeow/itmo-low-level-programming-lab1/file.db";
+  FILE *file = fopen(file_name, "rb+");
+
+  struct paging_pager *pager = paging_pager_create_and_init(file);
+  if (pager == NULL) {
+    debug("Pager is null");
+    return -1;
+  }
+
+  const char *text =
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB "
+      "Hi Timur from DB  Hi Timur from DB  Hi Timur from DB  Hi Timur from DB ";
+  const size_t text_size = strlen(text) + 1;
+
+  const char *text2 = "Hello World";
+  const size_t text2_size = strlen(text2) + 1;
+
+  debug("Add elements:");
+
+  paging_write(pager, PAGING_TYPE_1, text, text_size);
+  paging_write(pager, PAGING_TYPE_1, text2, text2_size);
+  paging_write(pager, PAGING_TYPE_1, text, text_size);
+
+  paging_write(pager, PAGING_TYPE_2, text, text_size);
+
+  paging_write(pager, PAGING_TYPE_3, text2, text2_size);
+  paging_write(pager, PAGING_TYPE_3, text2, text2_size);
+  paging_write(pager, PAGING_TYPE_3, text2, text2_size);
+
+  print_stat(pager);
+
+  debug("Remove elements:");
+
+  // Remove second type 1
+  {
+    void *data = NULL;
+    struct paging_read_result r1 =
+        paging_read_first(pager, PAGING_TYPE_1, &data);
+    free(data);
+    struct paging_read_result r2 = paging_read_next(pager, r1.info, &data);
+    free(data);
+    paging_remove(pager, r2.info);
+  }
+
+  // Remove first type 2
+  {
+    void *data = NULL;
+    struct paging_read_result r1 =
+        paging_read_first(pager, PAGING_TYPE_2, &data);
+    free(data);
+    paging_remove(pager, r1.info);
+  }
+
+  print_stat(pager);
+
+  debug("Add elements:");
+
+  paging_write(pager, PAGING_TYPE_3, text, text_size);
+  paging_write(pager, PAGING_TYPE_1, text2, text2_size);
+
+  print_stat(pager);
+}

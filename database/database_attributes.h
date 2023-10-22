@@ -5,8 +5,9 @@
 #ifndef ITMO_LOW_LEVEL_PROGRAMMING_LAB1_DATABASE_ATTRIBUTES_H
 #define ITMO_LOW_LEVEL_PROGRAMMING_LAB1_DATABASE_ATTRIBUTES_H
 
-#include "database_attribute.h"
 #include <stddef.h>
+
+#include "database_attribute.h"
 
 struct database_attributes {
   size_t count;

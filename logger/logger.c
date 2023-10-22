@@ -1,7 +1,7 @@
+#include "logger.h"
+
 #include <stdarg.h>
 #include <stdio.h>
-
-#include "logger.h"
 
 static void print_log(const char *level, const char *target, const char *file,
                       int line, const char *format, va_list arguments) {
