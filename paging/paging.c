@@ -16,8 +16,8 @@
 
 #define DIV_ROUND_UP(n, d) (((n) + (d)-1) / (d))
 
-#define MIN(a,b) (((a)<(b))?(a):(b))
-#define MAX(a,b) (((a)>(b))?(a):(b))
+#define MIN(a, b) (((a) < (b)) ? (a) : (b))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
 
 struct paging_pager {
   FILE *file;
