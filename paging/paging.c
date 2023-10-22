@@ -9,13 +9,15 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdlib.h>
-#include <sys/param.h>
 
 #define PAGING_PAGE_DATA_SIZE (1024)
 
 #define PAGING_INVALID_PAGE_NUMBER UINT64_MAX
 
 #define DIV_ROUND_UP(n, d) (((n) + (d)-1) / (d))
+
+#define MIN(a,b) (((a)<(b))?(a):(b))
+#define MAX(a,b) (((a)>(b))?(a):(b))
 
 struct paging_pager {
   FILE *file;
