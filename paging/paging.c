@@ -157,6 +157,8 @@ static uint64_t paging_first_page_number(const struct paging_pager *pager,
     return pager->first_page_type_2_page_number;
   case PAGING_TYPE_3:
     return pager->first_page_type_3_page_number;
+  default:
+    abort();
   }
 }
 

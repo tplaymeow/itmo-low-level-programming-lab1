@@ -10,9 +10,7 @@ struct database {};
 
 struct database_table {};
 
-struct database *database_create() {
-  return malloc(sizeof(struct database));
-}
+struct database *database_create() { return malloc(sizeof(struct database)); }
 
 void database_destroy(struct database *database) {
   if (database) {
