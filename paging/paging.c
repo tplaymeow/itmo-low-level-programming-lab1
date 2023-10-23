@@ -244,7 +244,7 @@ struct paging_write_result paging_write(struct paging_pager *pager,
     const size_t page_data_size =
         MIN(PAGING_PAGE_DATA_SIZE, data_size - page_data_offset);
 
-    const void *page_data = data + page_data_offset;
+    const void *page_data = (char *)data + page_data_offset;
 
     const size_t write_data_count = 1;
     const size_t write_data_result =
@@ -425,7 +425,7 @@ static struct paging_read_result paging_read(const struct paging_pager *pager,
       return (struct paging_read_result){.success = false};
     }
 
-    void *data_for_page = (PAGING_PAGE_DATA_SIZE * pages_read) + *data;
+    void *data_for_page = (PAGING_PAGE_DATA_SIZE * pages_read) + (char *)(*data);
     const size_t data_read_count = 1;
     const size_t data_read_result = fread(data_for_page, PAGING_PAGE_DATA_SIZE,
                                           data_read_count, pager->file);
