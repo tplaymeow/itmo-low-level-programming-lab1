@@ -48,8 +48,7 @@ static void print_stat(struct paging_pager *pager) {
 }
 
 int main(int argc, char **argv) {
-  const char *file_name =
-      "/Users/tplaymeow/itmo-low-level-programming-lab1/file.db";
+  const char *file_name = argv[1];
   FILE *file = fopen(file_name, "rb+");
 
   struct paging_pager *pager = paging_pager_create_and_init(file);

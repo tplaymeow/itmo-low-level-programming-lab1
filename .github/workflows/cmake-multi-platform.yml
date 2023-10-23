@@ -52,4 +52,4 @@ jobs:
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
       run: |
-        touch file.db && ${{ matrix.executable_path }}
+        touch file.db && ${{ matrix.executable_path }} file.db && rm file.db
