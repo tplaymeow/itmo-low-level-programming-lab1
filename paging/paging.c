@@ -425,7 +425,8 @@ static struct paging_read_result paging_read(const struct paging_pager *pager,
       return (struct paging_read_result){.success = false};
     }
 
-    void *data_for_page = (PAGING_PAGE_DATA_SIZE * pages_read) + (char *)(*data);
+    void *data_for_page =
+        (PAGING_PAGE_DATA_SIZE * pages_read) + (char *)(*data);
     const size_t data_read_count = 1;
     const size_t data_read_result = fread(data_for_page, PAGING_PAGE_DATA_SIZE,
                                           data_read_count, pager->file);
