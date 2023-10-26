@@ -42,6 +42,8 @@ struct paging_read_result {
 struct paging_pager *paging_pager_create_and_init(FILE *file);
 struct paging_pager *paging_pager_init(FILE *file);
 
+void paging_pager_destroy(struct paging_pager *pager);
+
 struct paging_write_result paging_write(struct paging_pager *pager,
                                         enum paging_type type, const void *data,
                                         size_t size);

@@ -123,6 +123,13 @@ struct paging_pager *paging_pager_init(FILE *file) {
   return pager;
 }
 
+void paging_pager_destroy(struct paging_pager *pager) {
+  if (pager == NULL) {
+    return;
+  }
+  free(pager);
+}
+
 static long paging_file_page_header_position(uint64_t page_number) {
   const long page_size =
       (long)sizeof(struct paging_file_page_header) + PAGING_PAGE_DATA_SIZE;
