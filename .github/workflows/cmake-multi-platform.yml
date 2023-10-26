@@ -23,6 +23,14 @@ jobs:
             c_compiler: clang
             build_type: Release
             executable_path: ./database_app/database_app
+          - os: macos-latest
+            c_compiler: clang
+            build_type: Release
+            executable_path: ./database_app/database_app
+          - os: macos-latest
+            c_compiler: gcc
+            build_type: Release
+            executable_path: ./database_app/database_app
           - os: windows-latest
             c_compiler: cl
             build_type: Release
