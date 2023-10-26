@@ -147,9 +147,9 @@ database_create_table(struct database *database,
   return (struct database_create_table_result){.success = true};
 }
 
-static struct database_table database_table_from_file_data(const void *data) {
+static struct database_table database_table_from_file_data(void *data) {
   const struct database_file_table_header *header = data;
-  const char *table_name = (char *)data + header->table_name_offset;
+  char *table_name = (char *)data + header->table_name_offset;
 
   const struct database_file_table_attribute *file_attributes =
       (struct database_file_table_attribute
@@ -290,4 +290,113 @@ database_insert_row(struct database *database, struct database_table table,
   free(data);
 
   return (struct database_insert_row_result){.success = true};
+}
+
+static union database_attribute_value *
+database_row_values_from_file_data(struct database_table table, void *data) {
+  const size_t header_data_size = sizeof(struct database_file_row_header);
+  const size_t integer_data_size = sizeof(int64_t);
+  const size_t floating_point_data_size = sizeof(double);
+  const size_t boolean_data_size = sizeof(uint64_t);
+
+  size_t data_offset = 0;
+
+  const struct database_file_row_header *header = data;
+  data_offset += header_data_size;
+
+  const char *table_name = (char *)data + header->table_name_offset;
+  if (strcmp(table_name, table.name) != 0) {
+    return NULL;
+  }
+
+  union database_attribute_value *values =
+      malloc(table.attributes.count * sizeof(union database_attribute_value));
+  if (values == NULL) {
+    debug("Alloc values error");
+    return NULL;
+  }
+
+  for (size_t i = 0; i < table.attributes.count; i++) {
+    switch (database_attributes_get(table.attributes, i).type) {
+    case DATABASE_ATTRIBUTE_INTEGER:
+      values[i].integer = *((int64_t *)((char *)data + data_offset));
+      data_offset += integer_data_size;
+      break;
+    case DATABASE_ATTRIBUTE_FLOATING_POINT:
+      values[i].floating_point = *((double *)((char *)data + data_offset));
+      data_offset += floating_point_data_size;
+      break;
+    case DATABASE_ATTRIBUTE_BOOLEAN:
+      values[i].boolean = *((uint64_t *)((char *)data + data_offset));
+      data_offset += boolean_data_size;
+      break;
+    case DATABASE_ATTRIBUTE_STRING: {
+      const uint64_t string_offset =
+          *((uint64_t *)((char *)data + data_offset));
+      values[i].string = ((char *)data + string_offset);
+      data_offset += sizeof(uint64_t);
+    } break;
+    default:
+      break;
+    }
+  }
+
+  return values;
+}
+
+struct database_select_row_result
+database_select_row_first(const struct database *database,
+                          struct database_table table) {
+  if (database == NULL) {
+    return (struct database_select_row_result){.success = false};
+  }
+
+  void *data = NULL;
+  struct paging_read_result read_result =
+      paging_read_first(database->pager, PAGING_TYPE_2, &data);
+
+  while (read_result.success) {
+    union database_attribute_value *values =
+        database_row_values_from_file_data(table, data);
+    if (values != NULL) {
+      return (struct database_select_row_result){
+          .success = true,
+          .row = {
+              .data = data, .paging_info = read_result.info, .values = values}};
+    }
+
+    free(data);
+    read_result = paging_read_next(database->pager, read_result.info, &data);
+  }
+
+  return (struct database_select_row_result){.success = false};
+}
+
+struct database_select_row_result
+database_select_row_next(const struct database *database,
+                         struct database_table table,
+                         struct database_row previous) {
+  if (database == NULL) {
+    return (struct database_select_row_result){.success = false};
+  }
+
+  void *data = NULL;
+  struct paging_read_result read_result =
+      paging_read_next(database->pager, previous.paging_info, &data);
+
+  while (read_result.success) {
+    union database_attribute_value *values =
+        database_row_values_from_file_data(table, data);
+    if (values != NULL) {
+      return (struct database_select_row_result){
+          .success = true,
+          .row = {
+              .data = data, .paging_info = read_result.info, .values = values}};
+    }
+
+    free(data);
+    read_result = paging_read_next(database->pager, read_result.info, &data);
+  }
+
+  return (struct database_select_row_result){.success = false};
 }

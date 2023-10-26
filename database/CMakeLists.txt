@@ -20,7 +20,9 @@ add_library(database
         database_table.c
         database_insert_row_request.h
         database_attribute_value.h
-        database_insert_row_request.c)
+        database_insert_row_request.c
+        database_row.h
+        database_row.c)
 
 include(../scripts/filename.cmake)
 define_file_info(database)

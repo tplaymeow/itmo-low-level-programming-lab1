@@ -254,40 +254,233 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  struct database_create_table_request request =
+  struct database_create_table_request request1 =
       database_create_table_request_create("Users", 4);
 
-  const struct database_attribute name = {.name = "NAME",
-                                          .type = DATABASE_ATTRIBUTE_STRING};
-  database_create_table_request_set(request, 0, name);
-  const struct database_attribute login = {.name = "LOGIN",
-                                           .type = DATABASE_ATTRIBUTE_STRING};
-  database_create_table_request_set(request, 1, login);
-  const struct database_attribute password = {
-      .name = "PASSWORD", .type = DATABASE_ATTRIBUTE_STRING};
-  database_create_table_request_set(request, 2, password);
-  const struct database_attribute age = {.name = "AGE",
-                                         .type = DATABASE_ATTRIBUTE_INTEGER};
-  database_create_table_request_set(request, 3, age);
+  database_create_table_request_set(
+      request1, 0,
+      (struct database_attribute){.name = "NAME",
+                                  .type = DATABASE_ATTRIBUTE_STRING});
+  database_create_table_request_set(
+      request1, 1,
+      (struct database_attribute){.name = "LOGIN",
+                                  .type = DATABASE_ATTRIBUTE_STRING});
+  database_create_table_request_set(
+      request1, 2,
+      (struct database_attribute){.name = "PASSWORD",
+                                  .type = DATABASE_ATTRIBUTE_STRING});
+  database_create_table_request_set(
+      request1, 3,
+      (struct database_attribute){.name = "AGE",
+                                  .type = DATABASE_ATTRIBUTE_INTEGER});
 
-  const struct database_create_table_result create_table_result =
-      database_create_table(database, request);
-  if (!create_table_result.success) {
+  const struct database_create_table_result create_table_result1 =
+      database_create_table(database, request1);
+  if (!create_table_result1.success) {
     debug("DB create table failed");
     return EXIT_FAILURE;
   }
 
-  const struct database_get_table_result get_table_result =
+  struct database_create_table_request request2 =
+      database_create_table_request_create("Table", 4);
+
+  database_create_table_request_set(
+      request2, 0,
+      (struct database_attribute){.name = "INT",
+                                  .type = DATABASE_ATTRIBUTE_INTEGER});
+  database_create_table_request_set(
+      request2, 1,
+      (struct database_attribute){.name = "BOOL",
+                                  .type = DATABASE_ATTRIBUTE_BOOLEAN});
+  database_create_table_request_set(
+      request2, 2,
+      (struct database_attribute){.name = "STRING",
+                                  .type = DATABASE_ATTRIBUTE_STRING});
+  database_create_table_request_set(
+      request2, 3,
+      (struct database_attribute){.name = "DOUBLE",
+                                  .type = DATABASE_ATTRIBUTE_FLOATING_POINT});
+
+  const struct database_create_table_result create_table_result2 =
+      database_create_table(database, request2);
+  if (!create_table_result2.success) {
+    debug("DB create table failed");
+    return EXIT_FAILURE;
+  }
+
+  const struct database_get_table_result get_table_result1 =
       database_get_table_with_name(database, "Users");
-  if (!get_table_result.success) {
+  if (!get_table_result1.success) {
     debug("DB get table failed");
     return EXIT_FAILURE;
   }
 
-  debug("Table name: %s", get_table_result.table.name);
-  for (size_t i = 0; i < get_table_result.table.attributes.count; i++) {
+  const struct database_get_table_result get_table_result2 =
+      database_get_table_with_name(database, "Table");
+  if (!get_table_result2.success) {
+    debug("DB get table failed");
+    return EXIT_FAILURE;
+  }
+
+  debug("Table name: %s", get_table_result1.table.name);
+  for (size_t i = 0; i < get_table_result1.table.attributes.count; i++) {
     const struct database_attribute attribute =
-        database_attributes_get(get_table_result.table.attributes, i);
+        database_attributes_get(get_table_result1.table.attributes, i);
     debug("Attribute %lu: %s", i, attribute.name);
+  }
+
+  debug("Table name: %s", get_table_result2.table.name);
+  for (size_t i = 0; i < get_table_result2.table.attributes.count; i++) {
+    const struct database_attribute attribute =
+        database_attributes_get(get_table_result2.table.attributes, i);
+    debug("Attribute %lu: %s", i, attribute.name);
+  }
+
+  {
+    struct database_insert_row_request insert_request =
+        database_insert_row_request_create(get_table_result1.table);
+    database_insert_row_request_set(
+        insert_request, 0, (union database_attribute_value){.string = "Timur"});
+    database_insert_row_request_set(
+        insert_request, 1,
+        (union database_attribute_value){.string = "tplaymeow"});
+    database_insert_row_request_set(
+        insert_request, 2, (union database_attribute_value){.string = "12345"});
+    database_insert_row_request_set(
+        insert_request, 3, (union database_attribute_value){.integer = 21});
+
+    assert(
+        database_insert_row(database, get_table_result1.table, insert_request)
+            .success);
+    assert(
+        database_insert_row(database, get_table_result1.table, insert_request)
+            .success);
+    assert(
+        database_insert_row(database, get_table_result1.table, insert_request)
+            .success);
+
+    database_insert_row_request_destroy(insert_request);
+  }
+
+  {
+    struct database_insert_row_request insert_request =
+        database_insert_row_request_create(get_table_result2.table);
+    database_insert_row_request_set(
+        insert_request, 0, (union database_attribute_value){.integer = 123});
+    database_insert_row_request_set(
+        insert_request, 1, (union database_attribute_value){.boolean = true});
+    database_insert_row_request_set(
+        insert_request, 2, (union database_attribute_value){.string = "12345"});
+    database_insert_row_request_set(
+        insert_request, 3,
+        (union database_attribute_value){.floating_point = 0.666});
+
+    assert(
+        database_insert_row(database, get_table_result2.table, insert_request)
+            .success);
+    assert(
+        database_insert_row(database, get_table_result2.table, insert_request)
+            .success);
+    assert(
+        database_insert_row(database, get_table_result2.table, insert_request)
+            .success);
+
+    database_insert_row_request_destroy(insert_request);
+  }
+
+  {
+    struct database_insert_row_request insert_request =
+        database_insert_row_request_create(get_table_result1.table);
+    database_insert_row_request_set(
+        insert_request, 0, (union database_attribute_value){.string = "Gleb"});
+    database_insert_row_request_set(
+        insert_request, 1, (union database_attribute_value){.string = "gleb"});
+    database_insert_row_request_set(
+        insert_request, 2, (union database_attribute_value){.string = "67890"});
+    database_insert_row_request_set(
+        insert_request, 3, (union database_attribute_value){.integer = 21});
+
+    assert(
+        database_insert_row(database, get_table_result1.table, insert_request)
+            .success);
+    assert(
+        database_insert_row(database, get_table_result1.table, insert_request)
+            .success);
+    assert(
+        database_insert_row(database, get_table_result1.table, insert_request)
+            .success);
+
+    database_insert_row_request_destroy(insert_request);
+  }
+
+  {
+    struct database_insert_row_request insert_request =
+        database_insert_row_request_create(get_table_result2.table);
+    database_insert_row_request_set(
+        insert_request, 0, (union database_attribute_value){.integer = 321});
+    database_insert_row_request_set(
+        insert_request, 1, (union database_attribute_value){.boolean = false});
+    database_insert_row_request_set(
+        insert_request, 2,
+        (union database_attribute_value){.string = "string"});
+    database_insert_row_request_set(
+        insert_request, 3,
+        (union database_attribute_value){.floating_point = 3.14});
+
+    assert(
+        database_insert_row(database, get_table_result2.table, insert_request)
+            .success);
+    assert(
+        database_insert_row(database, get_table_result2.table, insert_request)
+            .success);
+    assert(
+        database_insert_row(database, get_table_result2.table, insert_request)
+            .success);
+
+    database_insert_row_request_destroy(insert_request);
+  }
+
+  struct database_select_row_result sel_res1 =
+      database_select_row_first(database, get_table_result1.table);
+  while (sel_res1.success) {
+    for (size_t i = 0; i < get_table_result1.table.attributes.count; i++) {
+      const struct database_attribute attribute =
+          database_attributes_get(get_table_result1.table.attributes, i);
+      const union database_attribute_value value = sel_res1.row.values[i];
+      if (attribute.type == DATABASE_ATTRIBUTE_STRING) {
+        debug("%s: %s", attribute.name, value.string);
+      } else if (attribute.type == DATABASE_ATTRIBUTE_INTEGER) {
+        debug("%s: %" PRIi64, attribute.name, value.integer);
+      } else if (attribute.type == DATABASE_ATTRIBUTE_FLOATING_POINT) {
+        debug("%s: %lf", attribute.name, value.floating_point);
+      } else if (attribute.type == DATABASE_ATTRIBUTE_BOOLEAN) {
+        debug("%s: %s", attribute.name, value.boolean ? "true" : "false");
+      }
+    }
+    debug("-------------------");
+    sel_res1 = database_select_row_next(database, get_table_result1.table,
+                                        sel_res1.row);
+  }
+
+  struct database_select_row_result sel_res2 =
+      database_select_row_first(database, get_table_result2.table);
+  while (sel_res2.success) {
+    for (size_t i = 0; i < get_table_result2.table.attributes.count; i++) {
+      const struct database_attribute attribute =
+          database_attributes_get(get_table_result2.table.attributes, i);
+      const union database_attribute_value value = sel_res2.row.values[i];
+      if (attribute.type == DATABASE_ATTRIBUTE_STRING) {
+        debug("%s: %s", attribute.name, value.string);
+      } else if (attribute.type == DATABASE_ATTRIBUTE_INTEGER) {
+        debug("%s: %" PRIi64, attribute.name, value.integer);
+      } else if (attribute.type == DATABASE_ATTRIBUTE_FLOATING_POINT) {
+        debug("%s: %lf", attribute.name, value.floating_point);
+      } else if (attribute.type == DATABASE_ATTRIBUTE_BOOLEAN) {
+        debug("%s: %s", attribute.name, value.boolean ? "true" : "false");
+      }
+    }
+    debug("-------------------");
+    sel_res2 = database_select_row_next(database, get_table_result2.table,
+                                        sel_res2.row);
   }
 }
