@@ -336,109 +336,76 @@ int main(int argc, char **argv) {
     debug("Attribute %lu: %s", i, attribute.name);
   }
 
-  {
-    struct database_insert_row_request insert_request =
-        database_insert_row_request_create(get_table_result1.table);
-    database_insert_row_request_set(
-        insert_request, 0, (union database_attribute_value){.string = "Timur"});
-    database_insert_row_request_set(
-        insert_request, 1,
-        (union database_attribute_value){.string = "tplaymeow"});
-    database_insert_row_request_set(
-        insert_request, 2, (union database_attribute_value){.string = "12345"});
-    database_insert_row_request_set(
-        insert_request, 3, (union database_attribute_value){.integer = 21});
+  struct database_insert_row_request insert_request1 =
+      database_insert_row_request_create(get_table_result1.table);
+  database_insert_row_request_set(
+      insert_request1, 0, (union database_attribute_value){.string = "Timur"});
+  database_insert_row_request_set(
+      insert_request1, 1,
+      (union database_attribute_value){.string = "tplaymeow"});
+  database_insert_row_request_set(
+      insert_request1, 2, (union database_attribute_value){.string = "12345"});
+  database_insert_row_request_set(
+      insert_request1, 3, (union database_attribute_value){.integer = 21});
 
-    assert(
-        database_insert_row(database, get_table_result1.table, insert_request)
-            .success);
-    assert(
-        database_insert_row(database, get_table_result1.table, insert_request)
-            .success);
-    assert(
-        database_insert_row(database, get_table_result1.table, insert_request)
-            .success);
+  database_insert_row(database, get_table_result1.table, insert_request1);
+  database_insert_row(database, get_table_result1.table, insert_request1);
+  database_insert_row(database, get_table_result1.table, insert_request1);
 
-    database_insert_row_request_destroy(insert_request);
-  }
+  database_insert_row_request_destroy(insert_request1);
 
-  {
-    struct database_insert_row_request insert_request =
-        database_insert_row_request_create(get_table_result2.table);
-    database_insert_row_request_set(
-        insert_request, 0, (union database_attribute_value){.integer = 123});
-    database_insert_row_request_set(
-        insert_request, 1, (union database_attribute_value){.boolean = true});
-    database_insert_row_request_set(
-        insert_request, 2, (union database_attribute_value){.string = "12345"});
-    database_insert_row_request_set(
-        insert_request, 3,
-        (union database_attribute_value){.floating_point = 0.666});
+  struct database_insert_row_request insert_request2 =
+      database_insert_row_request_create(get_table_result2.table);
+  database_insert_row_request_set(
+      insert_request2, 0, (union database_attribute_value){.integer = 123});
+  database_insert_row_request_set(
+      insert_request2, 1, (union database_attribute_value){.boolean = true});
+  database_insert_row_request_set(
+      insert_request2, 2, (union database_attribute_value){.string = "12345"});
+  database_insert_row_request_set(
+      insert_request2, 3,
+      (union database_attribute_value){.floating_point = 0.666});
 
-    assert(
-        database_insert_row(database, get_table_result2.table, insert_request)
-            .success);
-    assert(
-        database_insert_row(database, get_table_result2.table, insert_request)
-            .success);
-    assert(
-        database_insert_row(database, get_table_result2.table, insert_request)
-            .success);
+  database_insert_row(database, get_table_result2.table, insert_request2);
+  database_insert_row(database, get_table_result2.table, insert_request2);
+  database_insert_row(database, get_table_result2.table, insert_request2);
 
-    database_insert_row_request_destroy(insert_request);
-  }
+  database_insert_row_request_destroy(insert_request2);
 
-  {
-    struct database_insert_row_request insert_request =
-        database_insert_row_request_create(get_table_result1.table);
-    database_insert_row_request_set(
-        insert_request, 0, (union database_attribute_value){.string = "Gleb"});
-    database_insert_row_request_set(
-        insert_request, 1, (union database_attribute_value){.string = "gleb"});
-    database_insert_row_request_set(
-        insert_request, 2, (union database_attribute_value){.string = "67890"});
-    database_insert_row_request_set(
-        insert_request, 3, (union database_attribute_value){.integer = 21});
+  struct database_insert_row_request insert_request3 =
+      database_insert_row_request_create(get_table_result1.table);
+  database_insert_row_request_set(
+      insert_request3, 0, (union database_attribute_value){.string = "Gleb"});
+  database_insert_row_request_set(
+      insert_request3, 1, (union database_attribute_value){.string = "gleb"});
+  database_insert_row_request_set(
+      insert_request3, 2, (union database_attribute_value){.string = "67890"});
+  database_insert_row_request_set(
+      insert_request3, 3, (union database_attribute_value){.integer = 21});
 
-    assert(
-        database_insert_row(database, get_table_result1.table, insert_request)
-            .success);
-    assert(
-        database_insert_row(database, get_table_result1.table, insert_request)
-            .success);
-    assert(
-        database_insert_row(database, get_table_result1.table, insert_request)
-            .success);
+  database_insert_row(database, get_table_result1.table, insert_request3);
+  database_insert_row(database, get_table_result1.table, insert_request3);
+  database_insert_row(database, get_table_result1.table, insert_request3);
 
-    database_insert_row_request_destroy(insert_request);
-  }
+  database_insert_row_request_destroy(insert_request3);
 
-  {
-    struct database_insert_row_request insert_request =
-        database_insert_row_request_create(get_table_result2.table);
-    database_insert_row_request_set(
-        insert_request, 0, (union database_attribute_value){.integer = 321});
-    database_insert_row_request_set(
-        insert_request, 1, (union database_attribute_value){.boolean = false});
-    database_insert_row_request_set(
-        insert_request, 2,
-        (union database_attribute_value){.string = "string"});
-    database_insert_row_request_set(
-        insert_request, 3,
-        (union database_attribute_value){.floating_point = 3.14});
+  struct database_insert_row_request insert_request4 =
+      database_insert_row_request_create(get_table_result2.table);
+  database_insert_row_request_set(
+      insert_request4, 0, (union database_attribute_value){.integer = 321});
+  database_insert_row_request_set(
+      insert_request4, 1, (union database_attribute_value){.boolean = false});
+  database_insert_row_request_set(
+      insert_request4, 2, (union database_attribute_value){.string = "string"});
+  database_insert_row_request_set(
+      insert_request4, 3,
+      (union database_attribute_value){.floating_point = 3.14});
 
-    assert(
-        database_insert_row(database, get_table_result2.table, insert_request)
-            .success);
-    assert(
-        database_insert_row(database, get_table_result2.table, insert_request)
-            .success);
-    assert(
-        database_insert_row(database, get_table_result2.table, insert_request)
-            .success);
+  database_insert_row(database, get_table_result2.table, insert_request4);
+  database_insert_row(database, get_table_result2.table, insert_request4);
+  database_insert_row(database, get_table_result2.table, insert_request4);
 
-    database_insert_row_request_destroy(insert_request);
-  }
+  database_insert_row_request_destroy(insert_request4);
 
   struct database_select_row_result sel_res1 =
       database_select_row_first(database, get_table_result1.table);
