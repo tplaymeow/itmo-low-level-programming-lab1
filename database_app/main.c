@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "database.h"
 #include "database_create_table_request.h"
 #include "logger.h"
 #include "paging.h"
@@ -47,7 +48,7 @@ static void print_stat(struct paging_pager *pager) {
   }
 }
 
-int main(int argc, char **argv) {
+int main1(int argc, char **argv) {
   const char *file_name = argv[1];
   FILE *file = fopen(file_name, "rb+");
 
@@ -237,4 +238,56 @@ int main(int argc, char **argv) {
   paging_write(pager, PAGING_TYPE_1, text2, text2_size);
 
   print_stat(pager);
+  return 0;
+}
+
+int main(int argc, char **argv) {
+  FILE *file = fopen(argv[1], "rb+");
+  if (file == NULL) {
+    debug("File open failed");
+    return EXIT_FAILURE;
+  }
+
+  struct database *database = database_init(file);
+  if (database == NULL) {
+    debug("DB init failed");
+    return EXIT_FAILURE;
+  }
+
+  struct database_create_table_request request =
+      database_create_table_request_create("Users", 4);
+
+  const struct database_attribute name = {.name = "NAME",
+                                          .type = DATABASE_ATTRIBUTE_STRING};
+  database_create_table_request_set(request, 0, name);
+  const struct database_attribute login = {.name = "LOGIN",
+                                           .type = DATABASE_ATTRIBUTE_STRING};
+  database_create_table_request_set(request, 1, login);
+  const struct database_attribute password = {
+      .name = "PASSWORD", .type = DATABASE_ATTRIBUTE_STRING};
+  database_create_table_request_set(request, 2, password);
+  const struct database_attribute age = {.name = "AGE",
+                                         .type = DATABASE_ATTRIBUTE_INTEGER};
+  database_create_table_request_set(request, 3, age);
+
+  const struct database_create_table_result create_table_result =
+      database_create_table(database, request);
+  if (!create_table_result.success) {
+    debug("DB create table failed");
+    return EXIT_FAILURE;
+  }
+
+  const struct database_get_table_result get_table_result =
+      database_get_table_with_name(database, "Users");
+  if (!get_table_result.success) {
+    debug("DB get table failed");
+    return EXIT_FAILURE;
+  }
+
+  debug("Table name: %s", get_table_result.table.name);
+  for (size_t i = 0; i < get_table_result.table.attributes.count; i++) {
+    const struct database_attribute attribute =
+        database_attributes_get(get_table_result.table.attributes, i);
+    debug("Attribute %lu: %s", i, attribute.name);
+  }
 }
