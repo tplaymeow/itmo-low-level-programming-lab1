@@ -248,7 +248,7 @@ int main(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  struct database *database = database_init(file);
+  struct database *database = database_create_and_init(file);
   if (database == NULL) {
     debug("DB init failed");
     return EXIT_FAILURE;
