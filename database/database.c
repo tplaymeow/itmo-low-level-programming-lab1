@@ -147,7 +147,7 @@ database_create_table(struct database *database,
   return (struct database_create_table_result){.success = true};
 }
 
-static struct database_table database_table_from_file_data(void *data) {
+static struct database_table database_table_from_file_data(struct paging_info page_info, void *data) {
   const struct database_file_table_header *header = data;
   char *table_name = (char *)data + header->table_name_offset;
 
@@ -166,7 +166,7 @@ static struct database_table database_table_from_file_data(void *data) {
   }
 
   return (struct database_table){
-      .data = data, .name = table_name, .attributes = attributes};
+      .data = data, .name = table_name, .page_info = page_info, .attributes = attributes};
 }
 
 struct database_get_table_result
@@ -181,7 +181,7 @@ database_get_table_with_name(const struct database *database,
       paging_read_first(database->pager, PAGING_TYPE_1, &data);
 
   while (read_result.success) {
-    const struct database_table table = database_table_from_file_data(data);
+    const struct database_table table = database_table_from_file_data(read_result.info, data);
     if (strcmp(table.name, name) == 0) {
       return (struct database_get_table_result){.success = true,
                                                 .table = table};
@@ -192,6 +192,34 @@ database_get_table_with_name(const struct database *database,
   }
 
   return (struct database_get_table_result){.success = false};
+}
+
+struct database_drop_table_result
+database_drop_table_result(struct database *database, struct database_table table) {
+  struct database_select_row_result select_result =
+      database_select_row_first(database, table, DATABASE_WHERE_ALWAYS);
+  while (select_result.success) {
+    const struct database_remove_row_result remove_row_result =
+        database_remove_row(database, select_result.row);
+    if (!remove_row_result.success) {
+      debug("Row removing error");
+      return (struct database_drop_table_result){.success = false};
+    }
+
+    database_row_destroy(select_result.row);
+    select_result = database_select_row_first(database, table, DATABASE_WHERE_ALWAYS);
+  }
+
+  const struct paging_remove_result remove_table_result =
+      paging_remove(database->pager, table.page_info);
+  if (!remove_table_result.success) {
+    debug("Table removing error");
+    return (struct database_drop_table_result){.success = false};
+  }
+
+  database_table_destroy(table);
+
+  return (struct database_drop_table_result){.success = true};
 }
 
 struct database_insert_row_result
@@ -293,7 +321,8 @@ database_insert_row(struct database *database, struct database_table table,
 }
 
 static union database_attribute_value *
-database_row_values_from_file_data(struct database_table table, void *data) {
+database_row_values_from_file_data(struct database_table table,
+                                   struct database_where where, void *data) {
   const size_t header_data_size = sizeof(struct database_file_row_header);
   const size_t integer_data_size = sizeof(int64_t);
   const size_t floating_point_data_size = sizeof(double);
@@ -341,12 +370,18 @@ database_row_values_from_file_data(struct database_table table, void *data) {
     }
   }
 
+  if (!database_where_is_satisfied(table, values, where)) {
+    free(values);
+    return NULL;
+  }
+
   return values;
 }
 
 struct database_select_row_result
 database_select_row_first(const struct database *database,
-                          struct database_table table) {
+                          struct database_table table,
+                          struct database_where where) {
   if (database == NULL) {
     return (struct database_select_row_result){.success = false};
   }
@@ -357,7 +392,7 @@ database_select_row_first(const struct database *database,
 
   while (read_result.success) {
     union database_attribute_value *values =
-        database_row_values_from_file_data(table, data);
+        database_row_values_from_file_data(table, where, data);
     if (values != NULL) {
       return (struct database_select_row_result){
           .success = true,
@@ -372,10 +407,9 @@ database_select_row_first(const struct database *database,
   return (struct database_select_row_result){.success = false};
 }
 
-struct database_select_row_result
-database_select_row_next(const struct database *database,
-                         struct database_table table,
-                         struct database_row previous) {
+struct database_select_row_result database_select_row_next(
+    const struct database *database, struct database_table table,
+    struct database_where where, struct database_row previous) {
   if (database == NULL) {
     return (struct database_select_row_result){.success = false};
   }
@@ -386,7 +420,7 @@ database_select_row_next(const struct database *database,
 
   while (read_result.success) {
     union database_attribute_value *values =
-        database_row_values_from_file_data(table, data);
+        database_row_values_from_file_data(table, where, data);
     if (values != NULL) {
       return (struct database_select_row_result){
           .success = true,
@@ -399,4 +433,21 @@ database_select_row_next(const struct database *database,
   }
 
   return (struct database_select_row_result){.success = false};
+}
+
+struct database_remove_row_result
+database_remove_row(const struct database *database, struct database_row row) {
+  if (database == NULL) {
+    return (struct database_remove_row_result){.success = false};
+  }
+
+  const struct paging_remove_result result =
+      paging_remove(database->pager, row.paging_info);
+  if (!result.success) {
+    debug("Remove row from pager error");
+    return (struct database_remove_row_result){.success = false};
+  }
+
+  database_row_destroy(row);
+  return (struct database_remove_row_result){.success = true};
 }
