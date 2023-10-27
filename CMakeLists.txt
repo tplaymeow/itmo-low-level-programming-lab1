@@ -6,6 +6,7 @@ set(CMAKE_C_STANDARD 11)
 add_subdirectory(logger)
 add_subdirectory(paging)
 add_subdirectory(database)
-add_subdirectory(database_app)
+add_subdirectory(database_test_app)
+add_subdirectory(database_benchmarks)
 
 include(scripts/format.cmake)

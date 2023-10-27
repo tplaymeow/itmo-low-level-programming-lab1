@@ -327,8 +327,8 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
     }
 
     const size_t header_write_count = 1;
-    const size_t header_write_result =
-        fread(&new_header, sizeof(new_header), header_write_count, pager->file);
+    const size_t header_write_result = fwrite(&new_header, sizeof(new_header),
+                                              header_write_count, pager->file);
     if (header_write_result != header_write_count) {
       debug("Write page %" PRIu64 " header error", next_page_number);
       return (struct paging_remove_result){.success = false};

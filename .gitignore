@@ -1,7 +1,11 @@
 .idea
 cmake-build-*
 build/
-file.db
+database_test_app/file.db
 .DS_Store
 .DS_Store
 .DS_Store
+database_benchmarks/db_files/insert_benchmark.db
+database_benchmarks/db_files/remove_benchmark.db
+database_benchmarks/db_files/remove_memory_benchmark.db
+database_benchmarks/db_files/select_benchmark.db
