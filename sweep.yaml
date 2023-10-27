@@ -3,12 +3,12 @@
 
 # This setting contains a list of rules that Sweep will check for. If any of these rules are broken in a new commit, Sweep will create an pull request to fix the broken rule.
 rules:
-  - "All docstrings and comments should be up to date."
-  - "Avoid large commented out chunks of code."
-  - "Remove debug log or print statements in production code."
-  - "Use consistent formatting and indentation."
-  - "Remove unused code and commented out code."
-  - "Avoid unnecessary imports."
+- "All docstrings and comments should be up to date."
+- "Avoid large commented out chunks of code."
+- "Remove debug log or print statements in production code."
+- "Use consistent formatting and indentation."
+- "Remove unused code and commented out code."
+- "Avoid unnecessary imports."
 
 # This is the branch that Sweep will develop from and make pull requests to. Most people use 'main' or 'master' but some users also use 'dev' or 'staging'.
 branch: 'main'
@@ -34,13 +34,13 @@ blocked_dirs: []
 # Example:
 #
 # docs:
-#   - PyGitHub: ["https://pygithub.readthedocs.io/en/latest/", "We use pygithub to interact with the GitHub API"]
+# - PyGitHub: ["https://pygithub.readthedocs.io/en/latest/", "We use pygithub to interact with the GitHub API"]
 docs: []
 
 # Sandbox executes commands in a sandboxed environment to validate code changes after every edit to guarantee pristine code. For more details, see the [Sandbox](./sandbox) page.
 sandbox:
   install:
-    - trunk init
+  - trunk init
   check:
-    - trunk fmt {file_path} || return 0
-    - trunk check --fix --print-failures {file_path}
+  - trunk fmt {file_path} || return 0
+  - trunk check --fix --print-failures {file_path}
