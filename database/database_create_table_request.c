@@ -19,12 +19,17 @@ database_create_table_request_create(const char *table_name,
 }
 
 void database_create_table_request_destroy(
-    struct database_create_table_request table) {
-  database_attributes_destroy(table.attributes);
+    struct database_create_table_request request) {
+  database_attributes_destroy(request.attributes);
 }
 
-void database_create_table_request_set(
-    struct database_create_table_request table, size_t position,
+struct database_attribute database_create_table_request_get_attribute(
+    struct database_create_table_request request, size_t position) {
+  return database_attributes_get(request.attributes, position);
+}
+
+void database_create_table_request_set_attribute(
+    struct database_create_table_request request, size_t position,
     struct database_attribute attribute) {
-  database_attributes_set(table.attributes, position, attribute);
+  database_attributes_set(request.attributes, position, attribute);
 }

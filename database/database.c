@@ -101,7 +101,7 @@ database_create_table(struct database *database,
   const size_t data_size = data_size_without_strings + strings_data_size;
   void *data = malloc(data_size);
   if (data == NULL) {
-    debug("Alloc data error");
+    warn("Data allocation error");
     return (struct database_create_table_result){.success = false};
   }
 
@@ -119,7 +119,7 @@ database_create_table(struct database *database,
 
   for (size_t i = 0; i < request.attributes.count; ++i) {
     const struct database_attribute attribute =
-        database_attributes_get(request.attributes, i);
+        database_create_table_request_get_attribute(request, i);
     const struct database_file_table_attribute file_attribute = {
         .attribute_name_offset = data_strings_offset,
         .attribute_type = database_attribute_type_to_uint64[attribute.type]};
@@ -137,7 +137,7 @@ database_create_table(struct database *database,
   struct paging_write_result write_result =
       paging_write(database->pager, PAGING_TYPE_1, data, data_size);
   if (!write_result.success) {
-    debug("Write data to pager error");
+    warn("Write data to pager error");
     free(data);
     return (struct database_create_table_result){.success = false};
   }
@@ -207,7 +207,7 @@ database_drop_table_result(struct database *database,
     const struct database_remove_row_result remove_row_result =
         database_remove_row(database, select_result.row);
     if (!remove_row_result.success) {
-      debug("Row removing error");
+      warn("Row removing error");
       return (struct database_drop_table_result){.success = false};
     }
 
@@ -219,7 +219,7 @@ database_drop_table_result(struct database *database,
   const struct paging_remove_result remove_table_result =
       paging_remove(database->pager, table.page_info);
   if (!remove_table_result.success) {
-    debug("Table removing error");
+    warn("Table removing error");
     return (struct database_drop_table_result){.success = false};
   }
 
@@ -253,7 +253,7 @@ database_insert_row(struct database *database, struct database_table table,
     case DATABASE_ATTRIBUTE_STRING:
       data_size_without_strings += sizeof(uint64_t);
       strings_data_size +=
-          strlen(database_insert_row_request_get(request, i).string) + 1;
+          strlen(database_insert_row_request_get_value(request, i).string) + 1;
       break;
     default:
       break;
@@ -280,24 +280,26 @@ database_insert_row(struct database *database, struct database_table table,
   for (size_t i = 0; i < table.attributes.count; i++) {
     switch (database_attributes_get(table.attributes, i).type) {
     case DATABASE_ATTRIBUTE_INTEGER: {
-      const int64_t value = database_insert_row_request_get(request, i).integer;
+      const int64_t value =
+          database_insert_row_request_get_value(request, i).integer;
       memcpy((char *)data + data_offset, &value, integer_data_size);
       data_offset += integer_data_size;
     } break;
     case DATABASE_ATTRIBUTE_FLOATING_POINT: {
       const double value =
-          database_insert_row_request_get(request, i).floating_point;
+          database_insert_row_request_get_value(request, i).floating_point;
       memcpy((char *)data + data_offset, &value, floating_point_data_size);
       data_offset += floating_point_data_size;
     } break;
     case DATABASE_ATTRIBUTE_BOOLEAN: {
       const uint64_t value =
-          database_insert_row_request_get(request, i).boolean;
+          database_insert_row_request_get_value(request, i).boolean;
       memcpy((char *)data + data_offset, &value, boolean_data_size);
       data_offset += boolean_data_size;
     } break;
     case DATABASE_ATTRIBUTE_STRING: {
-      const char *value = database_insert_row_request_get(request, i).string;
+      const char *value =
+          database_insert_row_request_get_value(request, i).string;
       const size_t string_data_size = strlen(value) + 1;
       memcpy((char *)data + data_offset, &data_strings_offset,
              sizeof(uint64_t));
@@ -326,9 +328,10 @@ database_insert_row(struct database *database, struct database_table table,
   return (struct database_insert_row_result){.success = true};
 }
 
-static union database_attribute_value *
+struct database_select_row_result
 database_row_values_from_file_data(struct database_table table,
-                                   struct database_where where, void *data) {
+                                   struct database_where where,
+                                   struct paging_info paging_info, void *data) {
   const size_t header_data_size = sizeof(struct database_file_row_header);
   const size_t integer_data_size = sizeof(int64_t);
   const size_t floating_point_data_size = sizeof(double);
@@ -341,34 +344,38 @@ database_row_values_from_file_data(struct database_table table,
 
   const char *table_name = (char *)data + header->table_name_offset;
   if (strcmp(table_name, table.name) != 0) {
-    return NULL;
+    return (struct database_select_row_result){.success = false};
   }
 
-  union database_attribute_value *values =
-      malloc(table.attributes.count * sizeof(union database_attribute_value));
-  if (values == NULL) {
-    debug("Alloc values error");
-    return NULL;
-  }
+  struct database_attribute_values values =
+      database_attribute_values_create(table.attributes.count);
 
   for (size_t i = 0; i < table.attributes.count; i++) {
     switch (database_attributes_get(table.attributes, i).type) {
-    case DATABASE_ATTRIBUTE_INTEGER:
-      values[i].integer = *((int64_t *)((char *)data + data_offset));
+    case DATABASE_ATTRIBUTE_INTEGER: {
+      const union database_attribute_value value = {
+          .integer = *((char *)data + data_offset)};
+      database_attribute_values_set(values, i, value);
       data_offset += integer_data_size;
-      break;
-    case DATABASE_ATTRIBUTE_FLOATING_POINT:
-      values[i].floating_point = *((double *)((char *)data + data_offset));
+    } break;
+    case DATABASE_ATTRIBUTE_FLOATING_POINT: {
+      const union database_attribute_value value = {
+          .floating_point = *((char *)data + data_offset)};
+      database_attribute_values_set(values, i, value);
       data_offset += floating_point_data_size;
-      break;
-    case DATABASE_ATTRIBUTE_BOOLEAN:
-      values[i].boolean = *((uint64_t *)((char *)data + data_offset));
+    } break;
+    case DATABASE_ATTRIBUTE_BOOLEAN: {
+      const union database_attribute_value value = {
+          .boolean = *((char *)data + data_offset)};
+      database_attribute_values_set(values, i, value);
       data_offset += boolean_data_size;
-      break;
+    } break;
     case DATABASE_ATTRIBUTE_STRING: {
       const uint64_t string_offset =
           *((uint64_t *)((char *)data + data_offset));
-      values[i].string = ((char *)data + string_offset);
+      const union database_attribute_value value = {.string = (char *)data +
+                                                              string_offset};
+      database_attribute_values_set(values, i, value);
       data_offset += sizeof(uint64_t);
     } break;
     default:
@@ -376,12 +383,14 @@ database_row_values_from_file_data(struct database_table table,
     }
   }
 
-  if (!database_where_is_satisfied(table, values, where)) {
-    free(values);
-    return NULL;
+  const struct database_row row = {
+      .data = data, .paging_info = paging_info, .values = values};
+  if (!database_where_is_satisfied(table, row, where)) {
+    database_attribute_values_destroy(values);
+    return (struct database_select_row_result){.success = false};
   }
 
-  return values;
+  return (struct database_select_row_result){.success = true, .row = row};
 }
 
 struct database_select_row_result
@@ -397,13 +406,11 @@ database_select_row_first(const struct database *database,
       paging_read_first(database->pager, PAGING_TYPE_2, &data);
 
   while (read_result.success) {
-    union database_attribute_value *values =
-        database_row_values_from_file_data(table, where, data);
-    if (values != NULL) {
-      return (struct database_select_row_result){
-          .success = true,
-          .row = {
-              .data = data, .paging_info = read_result.info, .values = values}};
+    const struct database_select_row_result select_result =
+        database_row_values_from_file_data(table, where, read_result.info,
+                                           data);
+    if (select_result.success) {
+      return select_result;
     }
 
     free(data);
@@ -425,13 +432,11 @@ struct database_select_row_result database_select_row_next(
       paging_read_next(database->pager, previous.paging_info, &data);
 
   while (read_result.success) {
-    union database_attribute_value *values =
-        database_row_values_from_file_data(table, where, data);
-    if (values != NULL) {
-      return (struct database_select_row_result){
-          .success = true,
-          .row = {
-              .data = data, .paging_info = read_result.info, .values = values}};
+    const struct database_select_row_result select_result =
+        database_row_values_from_file_data(table, where, read_result.info,
+                                           data);
+    if (select_result.success) {
+      return select_result;
     }
 
     free(data);

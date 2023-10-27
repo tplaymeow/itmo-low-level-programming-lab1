@@ -24,7 +24,9 @@ add_library(database
         database_row.h
         database_row.c
         database_where.h
-        database_where.c)
+        database_where.c
+        database_attribute_values.h
+        database_attribute_values.c)
 
 include(../scripts/filename.cmake)
 define_file_info(database)
