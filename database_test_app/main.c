@@ -218,16 +218,16 @@ int test(int argc, char **argv) {
       const union database_attribute_value value =
           database_attribute_values_get(sel_res1.row.values, i);
       if (attribute.type == DATABASE_ATTRIBUTE_STRING) {
-        printf("%s: %s\n", attribute.name, value.string);
+        printf("  %s: %s\n", attribute.name, value.string);
       } else if (attribute.type == DATABASE_ATTRIBUTE_INTEGER) {
-        printf("%s: %" PRIi64 "\n", attribute.name, value.integer);
+        printf("  %s: %" PRIi64 "\n", attribute.name, value.integer);
       } else if (attribute.type == DATABASE_ATTRIBUTE_FLOATING_POINT) {
-        printf("%s: %lf\n", attribute.name, value.floating_point);
+        printf("  %s: %lf\n", attribute.name, value.floating_point);
       } else if (attribute.type == DATABASE_ATTRIBUTE_BOOLEAN) {
-        printf("%s: %s\n", attribute.name, value.boolean ? "true" : "false");
+        printf("  %s: %s\n", attribute.name, value.boolean ? "true" : "false");
       }
     }
-    printf("-------------------\n");
+    printf("  -------------------\n");
     sel_res1 = database_select_row_next(database, get_table_result1.table,
                                         DATABASE_WHERE_ALWAYS, sel_res1.row);
   }
@@ -241,16 +241,16 @@ int test(int argc, char **argv) {
       const union database_attribute_value value =
           database_attribute_values_get(sel_res2.row.values, i);
       if (attribute.type == DATABASE_ATTRIBUTE_STRING) {
-        printf("%s: %s\n", attribute.name, value.string);
+        printf("  %s: %s\n", attribute.name, value.string);
       } else if (attribute.type == DATABASE_ATTRIBUTE_INTEGER) {
-        printf("%s: %" PRIi64 "\n", attribute.name, value.integer);
+        printf("  %s: %" PRIi64 "\n", attribute.name, value.integer);
       } else if (attribute.type == DATABASE_ATTRIBUTE_FLOATING_POINT) {
-        printf("%s: %lf\n", attribute.name, value.floating_point);
+        printf("  %s: %lf\n", attribute.name, value.floating_point);
       } else if (attribute.type == DATABASE_ATTRIBUTE_BOOLEAN) {
-        printf("%s: %s\n", attribute.name, value.boolean ? "true" : "false");
+        printf("  %s: %s\n", attribute.name, value.boolean ? "true" : "false");
       }
     }
-    printf("-------------------\n");
+    printf("  -------------------\n");
     sel_res2 = database_select_row_next(database, get_table_result2.table,
                                         DATABASE_WHERE_ALWAYS, sel_res2.row);
   }
