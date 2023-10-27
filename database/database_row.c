@@ -10,7 +10,5 @@ void database_row_destroy(struct database_row row) {
     free(row.data);
   }
 
-  if (row.values) {
-    free(row.values);
-  }
+  database_attribute_values_destroy(row.values);
 }

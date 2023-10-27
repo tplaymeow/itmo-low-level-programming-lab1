@@ -1,7 +1,7 @@
 .idea
 cmake-build-*
 build/
-database_test_app/file.db
+database_test_app/db_files/file.db
 .DS_Store
 .DS_Store
 .DS_Store

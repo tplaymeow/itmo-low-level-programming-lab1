@@ -9,27 +9,23 @@
 
 struct database_insert_row_request
 database_insert_row_request_create(struct database_table table) {
-  union database_attribute_value *values =
-      malloc(table.attributes.count * sizeof(union database_attribute_value));
+  struct database_attribute_values values =
+      database_attribute_values_create(table.attributes.count);
   return (struct database_insert_row_request){.values = values};
 }
 
 void database_insert_row_request_destroy(
     struct database_insert_row_request request) {
-  if (request.values == NULL) {
-    return;
-  }
-  free(request.values);
+  database_attribute_values_destroy(request.values);
 }
 
-void database_insert_row_request_set(struct database_insert_row_request request,
-                                     size_t position,
-                                     union database_attribute_value value) {
-  request.values[position] = value;
+union database_attribute_value database_insert_row_request_get_value(
+    struct database_insert_row_request request, size_t position) {
+  return database_attribute_values_get(request.values, position);
 }
 
-union database_attribute_value
-database_insert_row_request_get(struct database_insert_row_request request,
-                                size_t position) {
-  return request.values[position];
+void database_insert_row_request_set_value(
+    struct database_insert_row_request request, size_t position,
+    union database_attribute_value value) {
+  database_attribute_values_set(request.values, position, value);
 }

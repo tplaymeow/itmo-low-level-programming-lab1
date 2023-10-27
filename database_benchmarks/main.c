@@ -24,15 +24,15 @@ void insert_benchmark() {
 
   struct database_create_table_request table_request =
       database_create_table_request_create("Table", 3);
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 0,
       (struct database_attribute){.name = "ATTR1",
                                   .type = DATABASE_ATTRIBUTE_INTEGER});
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 1,
       (struct database_attribute){.name = "ATTR2",
                                   .type = DATABASE_ATTRIBUTE_FLOATING_POINT});
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 2,
       (struct database_attribute){.name = "ATTR3",
                                   .type = DATABASE_ATTRIBUTE_STRING});
@@ -53,12 +53,12 @@ void insert_benchmark() {
 
   struct database_insert_row_request insert_request =
       database_insert_row_request_create(get_table_result.table);
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 0, (union database_attribute_value){.integer = 1});
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 1,
       (union database_attribute_value){.floating_point = 2.5});
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 2, (union database_attribute_value){.string = "Hello"});
 
   for (int i = 0; i < 6000; i++) {
@@ -85,15 +85,15 @@ void select_benchmark() {
 
   struct database_create_table_request table_request =
       database_create_table_request_create("Table", 3);
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 0,
       (struct database_attribute){.name = "ATTR1",
                                   .type = DATABASE_ATTRIBUTE_INTEGER});
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 1,
       (struct database_attribute){.name = "ATTR2",
                                   .type = DATABASE_ATTRIBUTE_FLOATING_POINT});
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 2,
       (struct database_attribute){.name = "ATTR3",
                                   .type = DATABASE_ATTRIBUTE_STRING});
@@ -115,12 +115,12 @@ void select_benchmark() {
   for (int i = 0; i < 6000; i++) {
     struct database_insert_row_request insert_request =
         database_insert_row_request_create(get_table_result.table);
-    database_insert_row_request_set(
+    database_insert_row_request_set_value(
         insert_request, 0, (union database_attribute_value){.integer = i});
-    database_insert_row_request_set(
+    database_insert_row_request_set_value(
         insert_request, 1,
         (union database_attribute_value){.floating_point = 2.5});
-    database_insert_row_request_set(
+    database_insert_row_request_set_value(
         insert_request, 2, (union database_attribute_value){.string = "Hello"});
 
     database_insert_row(database, get_table_result.table, insert_request);
@@ -160,15 +160,15 @@ void remove_benchmark() {
 
   struct database_create_table_request table_request =
       database_create_table_request_create("Table", 3);
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 0,
       (struct database_attribute){.name = "ATTR1",
                                   .type = DATABASE_ATTRIBUTE_INTEGER});
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 1,
       (struct database_attribute){.name = "ATTR2",
                                   .type = DATABASE_ATTRIBUTE_FLOATING_POINT});
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 2,
       (struct database_attribute){.name = "ATTR3",
                                   .type = DATABASE_ATTRIBUTE_STRING});
@@ -189,12 +189,12 @@ void remove_benchmark() {
 
   struct database_insert_row_request insert_request =
       database_insert_row_request_create(get_table_result.table);
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 0, (union database_attribute_value){.integer = 0});
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 1,
       (union database_attribute_value){.floating_point = 2.5});
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 2, (union database_attribute_value){.string = "Hello"});
 
   for (int i = 0; i < 600; i++) {
@@ -231,15 +231,15 @@ void remove_memory_benchmark() {
 
   struct database_create_table_request table_request =
       database_create_table_request_create("Table", 3);
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 0,
       (struct database_attribute){.name = "ATTR1",
                                   .type = DATABASE_ATTRIBUTE_INTEGER});
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 1,
       (struct database_attribute){.name = "ATTR2",
                                   .type = DATABASE_ATTRIBUTE_FLOATING_POINT});
-  database_create_table_request_set(
+  database_create_table_request_set_attribute(
       table_request, 2,
       (struct database_attribute){.name = "ATTR3",
                                   .type = DATABASE_ATTRIBUTE_STRING});
@@ -260,12 +260,12 @@ void remove_memory_benchmark() {
 
   struct database_insert_row_request insert_request =
       database_insert_row_request_create(get_table_result.table);
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 0, (union database_attribute_value){.integer = 1});
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 1,
       (union database_attribute_value){.floating_point = 2.5});
-  database_insert_row_request_set(
+  database_insert_row_request_set_value(
       insert_request, 2, (union database_attribute_value){.string = "Hello"});
 
   for (int i = 0; i < 100; i++) {

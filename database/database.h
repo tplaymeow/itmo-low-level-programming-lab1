@@ -54,7 +54,7 @@ struct database_get_table_result
 database_get_table_with_name(const struct database *database, const char *name);
 
 struct database_drop_table_result
-  database_drop_table(struct database *database, struct database_table table);
+database_drop_table(struct database *database, struct database_table table);
 
 struct database_insert_row_result
 database_insert_row(struct database *database, struct database_table table,

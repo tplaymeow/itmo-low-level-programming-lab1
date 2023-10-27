@@ -24,7 +24,7 @@ struct database_where {
 };
 
 bool database_where_is_satisfied(struct database_table table,
-                                 union database_attribute_value *values,
+                                 struct database_row row,
                                  struct database_where where);
 
 #endif // ITMO_LOW_LEVEL_PROGRAMMING_LAB1_DATABASE_WHERE_H
