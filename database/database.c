@@ -262,10 +262,10 @@ database_insert_row(struct database *database, struct database_table table,
 
   const size_t data_size = data_size_without_strings + strings_data_size;
   void *data = malloc(data_size);
-  if (data == NULL) {
-    debug("Alloc data error");
-    return (struct database_insert_row_result){.success = false};
-  }
+    if (data == NULL) {
+      warn("Alloc data error");
+      return (struct database_insert_row_result){.success = false};
+    }
 
   size_t data_offset = 0;
   size_t data_strings_offset = data_size_without_strings;
@@ -316,12 +316,12 @@ database_insert_row(struct database *database, struct database_table table,
   assert(data_strings_offset == data_size);
 
   struct paging_write_result write_result =
-      paging_write(database->pager, PAGING_TYPE_2, data, data_size);
-  if (!write_result.success) {
-    debug("Write data to pager error");
-    free(data);
-    return (struct database_insert_row_result){.success = false};
-  }
+        paging_write(database->pager, PAGING_TYPE_2, data, data_size);
+    if (!write_result.success) {
+      warn("Write data to pager error");
+      free(data);
+      return (struct database_insert_row_result){.success = false};
+    }
 
   free(data);
 
@@ -453,11 +453,11 @@ database_remove_row(const struct database *database, struct database_row row) {
   }
 
   const struct paging_remove_result result =
-      paging_remove(database->pager, row.paging_info);
-  if (!result.success) {
-    debug("Remove row from pager error");
-    return (struct database_remove_row_result){.success = false};
-  }
+        paging_remove(database->pager, row.paging_info);
+    if (!result.success) {
+      warn("Remove row from pager error");
+      return (struct database_remove_row_result){.success = false};
+    }
 
   database_row_destroy(row);
   return (struct database_remove_row_result){.success = true};
