@@ -10,25 +10,26 @@
 #include "logger.h"
 #include "paging.h"
 
-//void print_all_selected_rows(struct database *database,
-//                             struct database_table table,
-//                             struct database_where where) {
-//  struct database_select_row_result select_row_result =
-//      database_select_row_first(database, table, where);
-//  while (select_row_result.success) {
-//    for (size_t i = 0; i < table.attributes.count; i++) {
-//      const struct database_attribute attribute =
-//          database_attributes_get(table.attributes, i);
-//      const
-//      const union database_attribute_value value = sel_res2.row.values[i];
-//    }
+// void print_all_selected_rows(struct database *database,
+//                              struct database_table table,
+//                              struct database_where where) {
+//   struct database_select_row_result select_row_result =
+//       database_select_row_first(database, table, where);
+//   while (select_row_result.success) {
+//     for (size_t i = 0; i < table.attributes.count; i++) {
+//       const struct database_attribute attribute =
+//           database_attributes_get(table.attributes, i);
+//       const
+//       const union database_attribute_value value = sel_res2.row.values[i];
+//     }
 //
-//    const struct database_select_row_result select_row_result_new =
-//        database_select_row_next(database, table, where, select_row_result.row);
-//    database_row_destroy(select_row_result.row);
-//    select_row_result = select_row_result_new;
-//  }
-//}
+//     const struct database_select_row_result select_row_result_new =
+//         database_select_row_next(database, table, where,
+//         select_row_result.row);
+//     database_row_destroy(select_row_result.row);
+//     select_row_result = select_row_result_new;
+//   }
+// }
 
 int test(int argc, char **argv) {
   FILE *file = fopen(argv[1], "rb+");
