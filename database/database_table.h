@@ -5,9 +5,9 @@
 #ifndef ITMO_LOW_LEVEL_PROGRAMMING_LAB1_DATABASE_TABLE_H
 #define ITMO_LOW_LEVEL_PROGRAMMING_LAB1_DATABASE_TABLE_H
 
-#include "paging.h"
 #include "database_attribute.h"
 #include "database_attributes.h"
+#include "paging.h"
 
 struct database_table {
   void *data;

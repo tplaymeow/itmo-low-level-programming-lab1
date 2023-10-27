@@ -147,7 +147,8 @@ database_create_table(struct database *database,
   return (struct database_create_table_result){.success = true};
 }
 
-static struct database_table database_table_from_file_data(struct paging_info page_info, void *data) {
+static struct database_table
+database_table_from_file_data(struct paging_info page_info, void *data) {
   const struct database_file_table_header *header = data;
   char *table_name = (char *)data + header->table_name_offset;
 
@@ -165,8 +166,10 @@ static struct database_table database_table_from_file_data(struct paging_info pa
     database_attributes_set(attributes, i, attribute);
   }
 
-  return (struct database_table){
-      .data = data, .name = table_name, .page_info = page_info, .attributes = attributes};
+  return (struct database_table){.data = data,
+                                 .name = table_name,
+                                 .page_info = page_info,
+                                 .attributes = attributes};
 }
 
 struct database_get_table_result
@@ -181,7 +184,8 @@ database_get_table_with_name(const struct database *database,
       paging_read_first(database->pager, PAGING_TYPE_1, &data);
 
   while (read_result.success) {
-    const struct database_table table = database_table_from_file_data(read_result.info, data);
+    const struct database_table table =
+        database_table_from_file_data(read_result.info, data);
     if (strcmp(table.name, name) == 0) {
       return (struct database_get_table_result){.success = true,
                                                 .table = table};
@@ -195,7 +199,8 @@ database_get_table_with_name(const struct database *database,
 }
 
 struct database_drop_table_result
-database_drop_table_result(struct database *database, struct database_table table) {
+database_drop_table_result(struct database *database,
+                           struct database_table table) {
   struct database_select_row_result select_result =
       database_select_row_first(database, table, DATABASE_WHERE_ALWAYS);
   while (select_result.success) {
@@ -207,7 +212,8 @@ database_drop_table_result(struct database *database, struct database_table tabl
     }
 
     database_row_destroy(select_result.row);
-    select_result = database_select_row_first(database, table, DATABASE_WHERE_ALWAYS);
+    select_result =
+        database_select_row_first(database, table, DATABASE_WHERE_ALWAYS);
   }
 
   const struct paging_remove_result remove_table_result =
