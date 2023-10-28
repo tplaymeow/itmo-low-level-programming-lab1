@@ -496,11 +496,11 @@ struct database_select_join_result database_select_join_next(
     return (struct database_select_join_result){.success = false};
   }
 
-  struct database_select_row_result left_result = {
-    .success = true, .row = previous_left};
+  struct database_select_row_result left_result = {.success = true,
+                                                   .row = previous_left};
+  struct database_select_row_result right_result = database_select_row_next(
+      database, right_table, right_where, previous_right);
   while (left_result.success) {
-    struct database_select_row_result right_result = database_select_row_next(
-        database, right_table, right_where, previous_right);
     while (right_result.success) {
       const bool is_satisfied = database_join_is_satisfied(
           left_table, left_result.row, right_table, right_result.row, join);
@@ -524,6 +524,8 @@ struct database_select_join_result database_select_join_next(
                                  left_result.row);
     database_row_destroy(left_result.row);
     left_result = next_left_result;
+    right_result =
+        database_select_row_first(database, right_table, right_where);
   }
 
   return (struct database_select_join_result){.success = false};
