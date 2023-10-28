@@ -431,6 +431,8 @@ struct database_select_row_result database_select_row_next(
   struct paging_read_result read_result =
       paging_read_next(database->pager, previous.paging_info, &data);
 
+  database_row_destroy(previous);
+
   while (read_result.success) {
     const struct database_select_row_result select_result =
         database_row_values_from_file_data(table, where, read_result.info,
@@ -454,12 +456,16 @@ struct database_select_join_result database_select_join_first(
     return (struct database_select_join_result){.success = false};
   }
 
-  struct database_select_row_result left_result =
-      database_select_row_first(database, left_table, left_where);
-  while (left_result.success) {
-    struct database_select_row_result right_result =
-        database_select_row_first(database, right_table, right_where);
-    while (right_result.success) {
+  for (struct database_select_row_result left_result =
+           database_select_row_first(database, left_table, left_where);
+       left_result.success;
+       left_result = database_select_row_next(database, left_table, left_where,
+                                              left_result.row)) {
+    for (struct database_select_row_result right_result =
+             database_select_row_first(database, right_table, right_where);
+         right_result.success;
+         right_result = database_select_row_next(
+             database, right_table, right_where, right_result.row)) {
       const bool is_satisfied = database_join_is_satisfied(
           left_table, left_result.row, right_table, right_result.row, join);
       if (is_satisfied) {
@@ -469,19 +475,7 @@ struct database_select_join_result database_select_join_first(
             .right_row = right_result.row,
         };
       }
-
-      const struct database_select_row_result next_right_result =
-          database_select_row_next(database, right_table, right_where,
-                                   right_result.row);
-      database_row_destroy(right_result.row);
-      right_result = next_right_result;
     }
-
-    const struct database_select_row_result next_left_result =
-        database_select_row_next(database, left_table, left_where,
-                                 left_result.row);
-    database_row_destroy(left_result.row);
-    left_result = next_left_result;
   }
 
   return (struct database_select_join_result){.success = false};
@@ -496,11 +490,14 @@ struct database_select_join_result database_select_join_next(
     return (struct database_select_join_result){.success = false};
   }
 
-  struct database_select_row_result left_result = {.success = true,
-                                                   .row = previous_left};
   struct database_select_row_result right_result = database_select_row_next(
       database, right_table, right_where, previous_right);
-  while (left_result.success) {
+
+  for (struct database_select_row_result left_result = {.success = true,
+                                                       .row = previous_left};
+       left_result.success;
+       left_result = database_select_row_next(database, left_table, left_where,
+                                              left_result.row)) {
     while (right_result.success) {
       const bool is_satisfied = database_join_is_satisfied(
           left_table, left_result.row, right_table, right_result.row, join);
@@ -511,19 +508,9 @@ struct database_select_join_result database_select_join_next(
             .right_row = right_result.row,
         };
       }
-
-      const struct database_select_row_result next_right_result =
-          database_select_row_next(database, right_table, right_where,
-                                   right_result.row);
-      database_row_destroy(right_result.row);
-      right_result = next_right_result;
+      right_result = database_select_row_next(database, right_table,
+                                              right_where, right_result.row);
     }
-
-    const struct database_select_row_result next_left_result =
-        database_select_row_next(database, left_table, left_where,
-                                 left_result.row);
-    database_row_destroy(left_result.row);
-    left_result = next_left_result;
     right_result =
         database_select_row_first(database, right_table, right_where);
   }
