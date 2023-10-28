@@ -496,8 +496,8 @@ struct database_select_join_result database_select_join_next(
     return (struct database_select_join_result){.success = false};
   }
 
-  struct database_select_row_result left_result = {
-    .success = true, .row = previous_left};
+  struct database_select_row_result left_result = {.success = true,
+                                                   .row = previous_left};
   while (left_result.success) {
     struct database_select_row_result right_result = database_select_row_next(
         database, right_table, right_where, previous_right);
