@@ -7,6 +7,7 @@
 
 #include "database_create_table_request.h"
 #include "database_insert_row_request.h"
+#include "database_join.h"
 #include "database_row.h"
 #include "database_table.h"
 #include "database_where.h"
@@ -35,6 +36,12 @@ struct database_insert_row_result {
 struct database_select_row_result {
   bool success;
   struct database_row row;
+};
+
+struct database_select_join_result {
+  bool success;
+  struct database_row left_row;
+  struct database_row right_row;
 };
 
 struct database_remove_row_result {
@@ -67,6 +74,16 @@ database_select_row_first(const struct database *database,
 struct database_select_row_result database_select_row_next(
     const struct database *database, struct database_table table,
     struct database_where where, struct database_row previous);
+
+struct database_select_join_result database_select_join_first(
+    const struct database *database, struct database_table left_table,
+    struct database_table right_table, struct database_where left_where,
+    struct database_where right_where, struct database_join join);
+struct database_select_join_result database_select_join_next(
+    const struct database *database, struct database_table left_table,
+    struct database_table right_table, struct database_where left_where,
+    struct database_where right_where, struct database_join join,
+    struct database_row previous_left, struct database_row previous_right);
 
 struct database_remove_row_result
 database_remove_row(const struct database *database, struct database_row row);

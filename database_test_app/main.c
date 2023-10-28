@@ -1,37 +1,209 @@
-#include <assert.h>
 #include <inttypes.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #include "database.h"
-#include "database_create_table_request.h"
 #include "logger.h"
-#include "paging.h"
 
-// void print_all_selected_rows(struct database *database,
-//                              struct database_table table,
-//                              struct database_where where) {
-//   struct database_select_row_result select_row_result =
-//       database_select_row_first(database, table, where);
-//   while (select_row_result.success) {
-//     for (size_t i = 0; i < table.attributes.count; i++) {
-//       const struct database_attribute attribute =
-//           database_attributes_get(table.attributes, i);
-//       const
-//       const union database_attribute_value value = sel_res2.row.values[i];
-//     }
-//
-//     const struct database_select_row_result select_row_result_new =
-//         database_select_row_next(database, table, where,
-//         select_row_result.row);
-//     database_row_destroy(select_row_result.row);
-//     select_row_result = select_row_result_new;
-//   }
-// }
+void print_all_rows(struct database *database, struct database_table table,
+                    struct database_where where) {
+  printf("==========================================\n");
+  for (size_t i = 0; i < table.attributes.count; i++) {
+    printf("%s,\t\t", database_attributes_get(table.attributes, i).name);
+  }
+  printf("\n");
+  struct database_select_row_result select_result =
+      database_select_row_first(database, table, where);
+  while (select_result.success) {
+    for (size_t i = 0; i < table.attributes.count; i++) {
+      const struct database_attribute attribute =
+          database_attributes_get(table.attributes, i);
+      const union database_attribute_value value =
+          database_attribute_values_get(select_result.row.values, i);
+      switch (attribute.type) {
+      case DATABASE_ATTRIBUTE_INTEGER:
+        printf("%" PRIi64 ",\t\t", value.integer);
+        break;
+      case DATABASE_ATTRIBUTE_FLOATING_POINT:
+        printf("%lf,\t\t", value.floating_point);
+        break;
+      case DATABASE_ATTRIBUTE_BOOLEAN:
+        printf("%s,\t\t", value.boolean ? "true" : "false");
+        break;
+      case DATABASE_ATTRIBUTE_STRING:
+        printf("%s,\t\t", value.string);
+        break;
+      default:
+        break;
+      }
+    }
+    printf("\n");
+    const struct database_select_row_result next_select_result =
+        database_select_row_next(database, table, where, select_result.row);
+    database_row_destroy(select_result.row);
+    select_result = next_select_result;
+  }
+  printf("==========================================\n");
+}
 
-int test(int argc, char **argv) {
+void print_all_joined(struct database *database,
+                      struct database_table left_table,
+                      struct database_table right_table,
+                      struct database_where left_where,
+                      struct database_where right_where,
+                      struct database_join join) {
+  printf("==========================================\n");
+  for (size_t i = 0; i < left_table.attributes.count; i++) {
+    printf("%s.%s,\t\t", left_table.name,
+           database_attributes_get(left_table.attributes, i).name);
+  }
+  for (size_t i = 0; i < right_table.attributes.count; i++) {
+    printf("%s.%s,\t\t", right_table.name,
+           database_attributes_get(right_table.attributes, i).name);
+  }
+  printf("\n");
+
+  struct database_select_join_result select_result = database_select_join_first(
+      database, left_table, right_table, left_where, right_where, join);
+  while (select_result.success) {
+    for (size_t i = 0; i < left_table.attributes.count; i++) {
+      const struct database_attribute attribute =
+          database_attributes_get(left_table.attributes, i);
+      const union database_attribute_value value =
+          database_attribute_values_get(select_result.left_row.values, i);
+      switch (attribute.type) {
+      case DATABASE_ATTRIBUTE_INTEGER:
+        printf("%" PRIi64 ",\t\t", value.integer);
+        break;
+      case DATABASE_ATTRIBUTE_FLOATING_POINT:
+        printf("%lf,\t\t", value.floating_point);
+        break;
+      case DATABASE_ATTRIBUTE_BOOLEAN:
+        printf("%s,\t\t", value.boolean ? "true" : "false");
+        break;
+      case DATABASE_ATTRIBUTE_STRING:
+        printf("%s,\t\t", value.string);
+        break;
+      default:
+        break;
+      }
+    }
+    for (size_t i = 0; i < right_table.attributes.count; i++) {
+      const struct database_attribute attribute =
+          database_attributes_get(right_table.attributes, i);
+      const union database_attribute_value value =
+          database_attribute_values_get(select_result.right_row.values, i);
+      switch (attribute.type) {
+      case DATABASE_ATTRIBUTE_INTEGER:
+        printf("%" PRIi64 ",\t\t", value.integer);
+        break;
+      case DATABASE_ATTRIBUTE_FLOATING_POINT:
+        printf("%lf,\t\t", value.floating_point);
+        break;
+      case DATABASE_ATTRIBUTE_BOOLEAN:
+        printf("%s,\t\t", value.boolean ? "true" : "false");
+        break;
+      case DATABASE_ATTRIBUTE_STRING:
+        printf("%s,\t\t", value.string);
+        break;
+      default:
+        break;
+      }
+    }
+    printf("\n");
+    const struct database_select_join_result next_select_result =
+        database_select_join_next(database, left_table, right_table, left_where,
+                                  right_where, join, select_result.left_row,
+                                  select_result.right_row);
+    // Fix destroying
+    // database_row_destroy(select_result.left_row);
+    // database_row_destroy(select_result.right_row);
+    select_result = next_select_result;
+  }
+  printf("==========================================\n");
+}
+
+struct database_table create_users_table(struct database *database) {
+  struct database_create_table_request request =
+      database_create_table_request_create("Users", 4);
+  database_create_table_request_set_attribute(
+      request, 0,
+      (struct database_attribute){"id", DATABASE_ATTRIBUTE_INTEGER});
+  database_create_table_request_set_attribute(
+      request, 1,
+      (struct database_attribute){"username", DATABASE_ATTRIBUTE_STRING});
+  database_create_table_request_set_attribute(
+      request, 2,
+      (struct database_attribute){"password", DATABASE_ATTRIBUTE_STRING});
+  database_create_table_request_set_attribute(
+      request, 3,
+      (struct database_attribute){"rating", DATABASE_ATTRIBUTE_FLOATING_POINT});
+  database_create_table(database, request);
+  database_create_table_request_destroy(request);
+  return database_get_table_with_name(database, "Users").table;
+}
+
+void insert_user(struct database *database, struct database_table table,
+                 int64_t id, const char *username, const char *password,
+                 double rating) {
+  struct database_insert_row_request request =
+      database_insert_row_request_create(table);
+  database_insert_row_request_set_value(
+      request, 0, (union database_attribute_value){.integer = id});
+  database_insert_row_request_set_value(
+      request, 1, (union database_attribute_value){.string = username});
+  database_insert_row_request_set_value(
+      request, 2, (union database_attribute_value){.string = password});
+  database_insert_row_request_set_value(
+      request, 3, (union database_attribute_value){.floating_point = rating});
+  database_insert_row(database, table, request);
+  database_insert_row_request_destroy(request);
+}
+
+struct database_table create_posts_table(struct database *database) {
+  struct database_create_table_request request =
+      database_create_table_request_create("Posts", 5);
+  database_create_table_request_set_attribute(
+      request, 0,
+      (struct database_attribute){"id", DATABASE_ATTRIBUTE_INTEGER});
+  database_create_table_request_set_attribute(
+      request, 1,
+      (struct database_attribute){"timestamp", DATABASE_ATTRIBUTE_INTEGER});
+  database_create_table_request_set_attribute(
+      request, 2,
+      (struct database_attribute){"title", DATABASE_ATTRIBUTE_STRING});
+  database_create_table_request_set_attribute(
+      request, 3,
+      (struct database_attribute){"message", DATABASE_ATTRIBUTE_STRING});
+  database_create_table_request_set_attribute(
+      request, 4,
+      (struct database_attribute){"user_id", DATABASE_ATTRIBUTE_INTEGER});
+  database_create_table(database, request);
+  database_create_table_request_destroy(request);
+  return database_get_table_with_name(database, "Posts").table;
+}
+
+void insert_post(struct database *database, struct database_table table,
+                 int64_t id, int64_t timestamp, const char *title,
+                 const char *message, int64_t user_id) {
+  struct database_insert_row_request request =
+      database_insert_row_request_create(table);
+  database_insert_row_request_set_value(
+      request, 0, (union database_attribute_value){.integer = id});
+  database_insert_row_request_set_value(
+      request, 1, (union database_attribute_value){.integer = timestamp});
+  database_insert_row_request_set_value(
+      request, 2, (union database_attribute_value){.string = title});
+  database_insert_row_request_set_value(
+      request, 3, (union database_attribute_value){.string = message});
+  database_insert_row_request_set_value(
+      request, 4, (union database_attribute_value){.integer = user_id});
+  database_insert_row(database, table, request);
+  database_insert_row_request_destroy(request);
+}
+
+int test1(int argc, char **argv) {
   FILE *file = fopen(argv[1], "rb+");
   if (file == NULL) {
     debug("File open failed");
@@ -44,217 +216,98 @@ int test(int argc, char **argv) {
     return EXIT_FAILURE;
   }
 
-  struct database_create_table_request request1 =
-      database_create_table_request_create("Users", 4);
+  struct database_table users_table = create_users_table(database);
 
-  database_create_table_request_set_attribute(
-      request1, 0,
-      (struct database_attribute){.name = "NAME",
-                                  .type = DATABASE_ATTRIBUTE_STRING});
-  database_create_table_request_set_attribute(
-      request1, 1,
-      (struct database_attribute){.name = "LOGIN",
-                                  .type = DATABASE_ATTRIBUTE_STRING});
-  database_create_table_request_set_attribute(
-      request1, 2,
-      (struct database_attribute){.name = "PASSWORD",
-                                  .type = DATABASE_ATTRIBUTE_STRING});
-  database_create_table_request_set_attribute(
-      request1, 3,
-      (struct database_attribute){.name = "AGE",
-                                  .type = DATABASE_ATTRIBUTE_INTEGER});
+  insert_user(database, users_table, 0, "Timur0", "12345", 1.5);
+  insert_user(database, users_table, 1, "Timur1", "12345", 2.5);
+  insert_user(database, users_table, 2, "Timur2", "12345", 3.5);
+  insert_user(database, users_table, 3, "Timur3", "12345", 4.5);
+  insert_user(database, users_table, 4, "Timur4", "12345", 1.5);
+  insert_user(database, users_table, 5, "Timur5", "12345", 2.5);
+  insert_user(database, users_table, 6, "Timur6", "12345", 3.5);
+  insert_user(database, users_table, 7, "Timur7", "12345", 4.5);
 
-  const struct database_create_table_result create_table_result1 =
-      database_create_table(database, request1);
-  if (!create_table_result1.success) {
-    debug("DB create table failed");
-    return EXIT_FAILURE;
+  printf("\nSelecting all rows\n");
+  print_all_rows(database, users_table, DATABASE_WHERE_ALWAYS);
+
+  printf("\nSelecting all rows with id > 4\n");
+  print_all_rows(database, users_table,
+                 (struct database_where){
+                     .attribute_position = 0,
+                     .operation = DATABASE_WHERE_OPERATION_GREATER,
+                     .value = (union database_attribute_value){.integer = 4}});
+
+  printf("\nSelecting all rows with username = Timur3\n");
+  print_all_rows(
+      database, users_table,
+      (struct database_where){
+          .attribute_position = 1,
+          .operation = DATABASE_WHERE_OPERATION_EQUAL,
+          .value = (union database_attribute_value){.string = "Timur3"}});
+
+  printf("\nSelecting all rows with username = Timur\n");
+  print_all_rows(
+      database, users_table,
+      (struct database_where){
+          .attribute_position = 1,
+          .operation = DATABASE_WHERE_OPERATION_EQUAL,
+          .value = (union database_attribute_value){.string = "Timur"}});
+
+  printf("\nRemoving row with username = Timur3\n");
+  {
+    struct database_select_row_result select_result = database_select_row_first(
+        database, users_table,
+        (struct database_where){
+            .attribute_position = 1,
+            .operation = DATABASE_WHERE_OPERATION_EQUAL,
+            .value = (union database_attribute_value){.string = "Timur3"}});
+    database_remove_row(database, select_result.row);
   }
 
-  struct database_create_table_request request2 =
-      database_create_table_request_create("Table", 4);
-
-  database_create_table_request_set_attribute(
-      request2, 0,
-      (struct database_attribute){.name = "INT",
-                                  .type = DATABASE_ATTRIBUTE_INTEGER});
-  database_create_table_request_set_attribute(
-      request2, 1,
-      (struct database_attribute){.name = "BOOL",
-                                  .type = DATABASE_ATTRIBUTE_BOOLEAN});
-  database_create_table_request_set_attribute(
-      request2, 2,
-      (struct database_attribute){.name = "STRING",
-                                  .type = DATABASE_ATTRIBUTE_STRING});
-  database_create_table_request_set_attribute(
-      request2, 3,
-      (struct database_attribute){.name = "DOUBLE",
-                                  .type = DATABASE_ATTRIBUTE_FLOATING_POINT});
-
-  const struct database_create_table_result create_table_result2 =
-      database_create_table(database, request2);
-  if (!create_table_result2.success) {
-    debug("DB create table failed");
-    return EXIT_FAILURE;
+  printf("\nRemoving row with id = 6\n");
+  {
+    struct database_select_row_result select_result = database_select_row_first(
+        database, users_table,
+        (struct database_where){
+            .attribute_position = 0,
+            .operation = DATABASE_WHERE_OPERATION_EQUAL,
+            .value = (union database_attribute_value){.integer = 6}});
+    database_remove_row(database, select_result.row);
   }
 
-  const struct database_get_table_result get_table_result1 =
-      database_get_table_with_name(database, "Users");
-  if (!get_table_result1.success) {
-    debug("DB get table failed");
-    return EXIT_FAILURE;
-  }
+  printf("\nSelecting all rows\n");
+  print_all_rows(database, users_table, DATABASE_WHERE_ALWAYS);
 
-  const struct database_get_table_result get_table_result2 =
-      database_get_table_with_name(database, "Table");
-  if (!get_table_result2.success) {
-    debug("DB get table failed");
-    return EXIT_FAILURE;
-  }
+  const struct database_table posts_table = create_posts_table(database);
 
-  debug("Table name: %s", get_table_result1.table.name);
-  for (size_t i = 0; i < get_table_result1.table.attributes.count; i++) {
-    const struct database_attribute attribute =
-        database_attributes_get(get_table_result1.table.attributes, i);
-    debug("Attribute %lu: %s", i, attribute.name);
-  }
+  insert_post(database, posts_table, 0, 1001, "Title 1", "Message 1", 0);
+  insert_post(database, posts_table, 1, 1002, "Title 2", "Message 2", 1);
+  insert_post(database, posts_table, 2, 1003, "Title 3", "Message 3", 2);
+  insert_post(database, posts_table, 3, 1004, "Title 4", "Message 4", 4);
+  insert_post(database, posts_table, 4, 1005, "Title 5", "Message 5", 5);
+  insert_post(database, posts_table, 5, 1006, "Title 6", "Message 6", 7);
+  insert_post(database, posts_table, 6, 1007, "Title 7", "Message 7", 1);
+  insert_post(database, posts_table, 7, 1008, "Title 8", "Message 8", 1);
+  insert_post(database, posts_table, 8, 1009, "Title 9", "Message 9", 1);
+  insert_post(database, posts_table, 9, 1010, "Title 10", "Message 10", 7);
+  insert_post(database, posts_table, 10, 1011, "Title 11", "Message 11", 4);
+  insert_post(database, posts_table, 11, 1012, "Title 12", "Message 12", 5);
+  insert_post(database, posts_table, 12, 1013, "Title 13", "Message 13", 5);
+  insert_post(database, posts_table, 13, 1014, "Title 14", "Message 14", 5);
+  insert_post(database, posts_table, 14, 1015, "Title 15", "Message 15", 0);
+  insert_post(database, posts_table, 15, 1016, "Title 16", "Message 16", 0);
+  insert_post(database, posts_table, 16, 1017, "Title 17", "Message 17", 7);
 
-  debug("Table name: %s", get_table_result2.table.name);
-  for (size_t i = 0; i < get_table_result2.table.attributes.count; i++) {
-    const struct database_attribute attribute =
-        database_attributes_get(get_table_result2.table.attributes, i);
-    debug("Attribute %lu: %s", i, attribute.name);
-  }
+  printf("\nSelecting all rows\n");
+  print_all_rows(database, posts_table, DATABASE_WHERE_ALWAYS);
 
-  struct database_insert_row_request insert_request1 =
-      database_insert_row_request_create(get_table_result1.table);
-  database_insert_row_request_set_value(
-      insert_request1, 0, (union database_attribute_value){.string = "Timur"});
-  database_insert_row_request_set_value(
-      insert_request1, 1,
-      (union database_attribute_value){.string = "tplaymeow"});
-  database_insert_row_request_set_value(
-      insert_request1, 2, (union database_attribute_value){.string = "12345"});
-  database_insert_row_request_set_value(
-      insert_request1, 3, (union database_attribute_value){.integer = 21});
+  printf("\nSelecting all users joined with posts\n");
+  print_all_joined(database, users_table, posts_table, DATABASE_WHERE_ALWAYS,
+                   DATABASE_WHERE_ALWAYS,
+                   (struct database_join){.left_attribute_position = 0,
+                                          .right_attribute_position = 4});
 
-  database_insert_row(database, get_table_result1.table, insert_request1);
-  database_insert_row(database, get_table_result1.table, insert_request1);
-  database_insert_row(database, get_table_result1.table, insert_request1);
-  database_insert_row(database, get_table_result1.table, insert_request1);
-
-  database_insert_row_request_destroy(insert_request1);
-
-  struct database_insert_row_request insert_request2 =
-      database_insert_row_request_create(get_table_result2.table);
-  database_insert_row_request_set_value(
-      insert_request2, 0, (union database_attribute_value){.integer = 123});
-  database_insert_row_request_set_value(
-      insert_request2, 1, (union database_attribute_value){.boolean = true});
-  database_insert_row_request_set_value(
-      insert_request2, 2, (union database_attribute_value){.string = "12345"});
-  database_insert_row_request_set_value(
-      insert_request2, 3,
-      (union database_attribute_value){.floating_point = 0.666});
-
-  database_insert_row(database, get_table_result2.table, insert_request2);
-  database_insert_row(database, get_table_result2.table, insert_request2);
-  database_insert_row(database, get_table_result2.table, insert_request2);
-
-  database_insert_row_request_destroy(insert_request2);
-
-  struct database_insert_row_request insert_request3 =
-      database_insert_row_request_create(get_table_result1.table);
-  database_insert_row_request_set_value(
-      insert_request3, 0, (union database_attribute_value){.string = "Gleb"});
-  database_insert_row_request_set_value(
-      insert_request3, 1, (union database_attribute_value){.string = "gleb"});
-  database_insert_row_request_set_value(
-      insert_request3, 2, (union database_attribute_value){.string = "67890"});
-  database_insert_row_request_set_value(
-      insert_request3, 3, (union database_attribute_value){.integer = 21});
-
-  database_insert_row(database, get_table_result1.table, insert_request3);
-  database_insert_row(database, get_table_result1.table, insert_request3);
-  database_insert_row(database, get_table_result1.table, insert_request3);
-
-  database_insert_row_request_destroy(insert_request3);
-
-  struct database_insert_row_request insert_request4 =
-      database_insert_row_request_create(get_table_result2.table);
-  database_insert_row_request_set_value(
-      insert_request4, 0, (union database_attribute_value){.integer = 321});
-  database_insert_row_request_set_value(
-      insert_request4, 1, (union database_attribute_value){.boolean = false});
-  database_insert_row_request_set_value(
-      insert_request4, 2, (union database_attribute_value){.string = "string"});
-  database_insert_row_request_set_value(
-      insert_request4, 3,
-      (union database_attribute_value){.floating_point = 3.14});
-
-  database_insert_row(database, get_table_result2.table, insert_request4);
-  database_insert_row(database, get_table_result2.table, insert_request4);
-  database_insert_row(database, get_table_result2.table, insert_request4);
-
-  database_insert_row_request_destroy(insert_request4);
-
-  struct database_where where = {.attribute_position = 0,
-                                 .value = {.string = "Timur"},
-                                 .operation = DATABASE_WHERE_OPERATION_EQUAL};
-  struct database_select_row_result sel_res1 =
-      database_select_row_first(database, get_table_result1.table, where);
-  while (sel_res1.success) {
-    database_remove_row(database, sel_res1.row);
-    sel_res1 =
-        database_select_row_first(database, get_table_result1.table, where);
-  }
-
-  sel_res1 = database_select_row_first(database, get_table_result1.table,
-                                       DATABASE_WHERE_ALWAYS);
-  while (sel_res1.success) {
-    for (size_t i = 0; i < get_table_result1.table.attributes.count; i++) {
-      const struct database_attribute attribute =
-          database_attributes_get(get_table_result1.table.attributes, i);
-      const union database_attribute_value value =
-          database_attribute_values_get(sel_res1.row.values, i);
-      if (attribute.type == DATABASE_ATTRIBUTE_STRING) {
-        printf("%s: %s\n", attribute.name, value.string);
-      } else if (attribute.type == DATABASE_ATTRIBUTE_INTEGER) {
-        printf("%s: %" PRIi64 "\n", attribute.name, value.integer);
-      } else if (attribute.type == DATABASE_ATTRIBUTE_FLOATING_POINT) {
-        printf("%s: %lf\n", attribute.name, value.floating_point);
-      } else if (attribute.type == DATABASE_ATTRIBUTE_BOOLEAN) {
-        printf("%s: %s\n", attribute.name, value.boolean ? "true" : "false");
-      }
-    }
-    printf("-------------------\n");
-    sel_res1 = database_select_row_next(database, get_table_result1.table,
-                                        DATABASE_WHERE_ALWAYS, sel_res1.row);
-  }
-
-  struct database_select_row_result sel_res2 = database_select_row_first(
-      database, get_table_result2.table, DATABASE_WHERE_ALWAYS);
-  while (sel_res2.success) {
-    for (size_t i = 0; i < get_table_result2.table.attributes.count; i++) {
-      const struct database_attribute attribute =
-          database_attributes_get(get_table_result2.table.attributes, i);
-      const union database_attribute_value value =
-          database_attribute_values_get(sel_res2.row.values, i);
-      if (attribute.type == DATABASE_ATTRIBUTE_STRING) {
-        printf("%s: %s\n", attribute.name, value.string);
-      } else if (attribute.type == DATABASE_ATTRIBUTE_INTEGER) {
-        printf("%s: %" PRIi64 "\n", attribute.name, value.integer);
-      } else if (attribute.type == DATABASE_ATTRIBUTE_FLOATING_POINT) {
-        printf("%s: %lf\n", attribute.name, value.floating_point);
-      } else if (attribute.type == DATABASE_ATTRIBUTE_BOOLEAN) {
-        printf("%s: %s\n", attribute.name, value.boolean ? "true" : "false");
-      }
-    }
-    printf("-------------------\n");
-    sel_res2 = database_select_row_next(database, get_table_result2.table,
-                                        DATABASE_WHERE_ALWAYS, sel_res2.row);
-  }
   return EXIT_SUCCESS;
 }
 
-int main(int argc, char **argv) { test(argc, argv); }
+int main(int argc, char **argv) { return test1(argc, argv); }

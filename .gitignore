@@ -3,8 +3,6 @@ cmake-build-*
 build/
 database_test_app/db_files/file.db
 .DS_Store
-.DS_Store
-.DS_Store
 database_benchmarks/db_files/insert_benchmark.db
 database_benchmarks/db_files/remove_benchmark.db
 database_benchmarks/db_files/remove_memory_benchmark.db

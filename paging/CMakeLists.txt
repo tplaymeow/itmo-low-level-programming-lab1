@@ -4,8 +4,10 @@ project(paging C)
 set(CMAKE_C_STANDARD 11)
 
 include_directories(
+        "../utils"
         "../logger")
 target_link_libraries(
+        utils
         logger)
 
 add_library(paging

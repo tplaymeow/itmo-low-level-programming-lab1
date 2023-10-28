@@ -263,7 +263,7 @@ database_insert_row(struct database *database, struct database_table table,
   const size_t data_size = data_size_without_strings + strings_data_size;
   void *data = malloc(data_size);
   if (data == NULL) {
-    debug("Alloc data error");
+    warn("Alloc data error");
     return (struct database_insert_row_result){.success = false};
   }
 
@@ -318,7 +318,7 @@ database_insert_row(struct database *database, struct database_table table,
   struct paging_write_result write_result =
       paging_write(database->pager, PAGING_TYPE_2, data, data_size);
   if (!write_result.success) {
-    debug("Write data to pager error");
+    warn("Write data to pager error");
     free(data);
     return (struct database_insert_row_result){.success = false};
   }
@@ -446,6 +446,89 @@ struct database_select_row_result database_select_row_next(
   return (struct database_select_row_result){.success = false};
 }
 
+struct database_select_join_result database_select_join_first(
+    const struct database *database, struct database_table left_table,
+    struct database_table right_table, struct database_where left_where,
+    struct database_where right_where, struct database_join join) {
+  if (database == NULL) {
+    return (struct database_select_join_result){.success = false};
+  }
+
+  struct database_select_row_result left_result =
+      database_select_row_first(database, left_table, left_where);
+  while (left_result.success) {
+    struct database_select_row_result right_result =
+        database_select_row_first(database, right_table, right_where);
+    while (right_result.success) {
+      const bool is_satisfied = database_join_is_satisfied(
+          left_table, left_result.row, right_table, right_result.row, join);
+      if (is_satisfied) {
+        return (struct database_select_join_result){
+            .success = true,
+            .left_row = left_result.row,
+            .right_row = right_result.row,
+        };
+      }
+
+      const struct database_select_row_result next_right_result =
+          database_select_row_next(database, right_table, right_where,
+                                   right_result.row);
+      database_row_destroy(right_result.row);
+      right_result = next_right_result;
+    }
+
+    const struct database_select_row_result next_left_result =
+        database_select_row_next(database, left_table, left_where,
+                                 left_result.row);
+    database_row_destroy(left_result.row);
+    left_result = next_left_result;
+  }
+
+  return (struct database_select_join_result){.success = false};
+}
+
+struct database_select_join_result database_select_join_next(
+    const struct database *database, struct database_table left_table,
+    struct database_table right_table, struct database_where left_where,
+    struct database_where right_where, struct database_join join,
+    struct database_row previous_left, struct database_row previous_right) {
+  if (database == NULL) {
+    return (struct database_select_join_result){.success = false};
+  }
+
+  struct database_select_row_result left_result = {
+    .success = true, .row = previous_left};
+  while (left_result.success) {
+    struct database_select_row_result right_result = database_select_row_next(
+        database, right_table, right_where, previous_right);
+    while (right_result.success) {
+      const bool is_satisfied = database_join_is_satisfied(
+          left_table, left_result.row, right_table, right_result.row, join);
+      if (is_satisfied) {
+        return (struct database_select_join_result){
+            .success = true,
+            .left_row = left_result.row,
+            .right_row = right_result.row,
+        };
+      }
+
+      const struct database_select_row_result next_right_result =
+          database_select_row_next(database, right_table, right_where,
+                                   right_result.row);
+      database_row_destroy(right_result.row);
+      right_result = next_right_result;
+    }
+
+    const struct database_select_row_result next_left_result =
+        database_select_row_next(database, left_table, left_where,
+                                 left_result.row);
+    database_row_destroy(left_result.row);
+    left_result = next_left_result;
+  }
+
+  return (struct database_select_join_result){.success = false};
+}
+
 struct database_remove_row_result
 database_remove_row(const struct database *database, struct database_row row) {
   if (database == NULL) {
@@ -455,7 +538,7 @@ database_remove_row(const struct database *database, struct database_row row) {
   const struct paging_remove_result result =
       paging_remove(database->pager, row.paging_info);
   if (!result.success) {
-    debug("Remove row from pager error");
+    warn("Remove row from pager error");
     return (struct database_remove_row_result){.success = false};
   }
 
