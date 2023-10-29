@@ -35,16 +35,40 @@ jobs:
             c_compiler: cl
             build_type: Release
             executable_path: ./database_test_app/Release/database_test_app.exe
+          - os: ubuntu-latest
+            c_compiler: gcc
+            build_type: Debug
+            sanitize-address: On
+            executable_path: ./database_test_app/database_test_app
+          - os: ubuntu-latest
+            c_compiler: clang
+            build_type: Debug
+            sanitize-address: On
+            executable_path: ./database_test_app/database_test_app
+          - os: macos-latest
+            c_compiler: clang
+            build_type: Debug
+            sanitize-address: On
+            executable_path: ./database_test_app/database_test_app
+          - os: macos-latest
+            c_compiler: gcc
+            build_type: Debug
+            sanitize-address: On
+            executable_path: ./database_test_app/database_test_app
+          - os: windows-latest
+            c_compiler: cl
+            build_type: Debug
+            sanitize-address: On
+            executable_path: ./database_test_app/Release/database_test_app.exe
     
     name: Build and Test (${{ matrix.os }}, ${{ matrix.c_compiler }}, ${{ matrix.build_type }})
 
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@master
-
+      with:
+        submodules: recursive
+        
     - name: Set reusable strings
       id: strings
       shell: bash
@@ -56,6 +80,7 @@ jobs:
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DSANITIZE_ADDRESS=${{ sanitize-address }}
         -S ${{ github.workspace }}
 
     - name: Build
