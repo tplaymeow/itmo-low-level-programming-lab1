@@ -5,6 +5,7 @@ set(CMAKE_C_STANDARD 11)
 
 add_executable(database_benchmarks
         main.c)
+add_sanitizers(database_benchmarks)
 
 include_directories(
         "../database"

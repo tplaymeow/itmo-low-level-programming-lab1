@@ -11,8 +11,9 @@ target_link_libraries(
         logger)
 
 add_library(paging
-        paging.h paging.c
-)
+        paging.h paging.c)
+add_sanitizers(paging)
+
 
 include(../scripts/filename.cmake)
 define_file_info(paging)

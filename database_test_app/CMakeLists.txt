@@ -4,8 +4,8 @@ project(database_test_app C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(database_test_app
-        main.c
-)
+        main.c)
+add_sanitizers(database_test_app)
 
 include_directories(
         "../database"

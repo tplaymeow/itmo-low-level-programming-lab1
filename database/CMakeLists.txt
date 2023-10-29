@@ -29,6 +29,7 @@ add_library(database
         database_attribute_values.c
         database_join.h
         database_join.c)
+add_sanitizers(database)
 
 include(../scripts/filename.cmake)
 define_file_info(database)

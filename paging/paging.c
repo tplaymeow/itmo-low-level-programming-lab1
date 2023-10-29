@@ -209,7 +209,7 @@ struct paging_write_result paging_write(struct paging_pager *pager,
           paging_file_page_header_position(pager->first_free_page_number);
       const int seek_result = fseek(pager->file, seek_position, SEEK_SET);
       if (seek_result != 0) {
-        debug("Free page header seek error");
+        warn("Free page header seek error");
         return (struct paging_write_result){.success = false};
       }
 
@@ -219,7 +219,7 @@ struct paging_write_result paging_write(struct paging_pager *pager,
       const size_t read_result =
           fread(&header, sizeof(header), read_count, pager->file);
       if (read_result != read_count) {
-        debug("Free page header read error");
+        warn("Free page header read error");
         return (struct paging_write_result){.success = false};
       }
 
@@ -229,7 +229,7 @@ struct paging_write_result paging_write(struct paging_pager *pager,
     const long header_position = paging_file_page_header_position(page_number);
     const int seek_result = fseek(pager->file, header_position, SEEK_SET);
     if (seek_result != 0) {
-      debug("Page header seek error");
+      warn("Page header seek error");
       return (struct paging_write_result){.success = false};
     }
 
@@ -241,7 +241,7 @@ struct paging_write_result paging_write(struct paging_pager *pager,
     const size_t write_header_result =
         fwrite(&header, sizeof(header), write_header_count, pager->file);
     if (write_header_result != write_header_count) {
-      debug("Page header write error");
+      warn("Page header write error");
       return (struct paging_write_result){.success = false};
     }
 
@@ -255,18 +255,24 @@ struct paging_write_result paging_write(struct paging_pager *pager,
     const size_t write_data_result =
         fwrite(page_data, page_data_size, write_data_count, pager->file);
     if (write_data_result != write_data_count) {
-      debug("Data write error");
+      warn("Data write error");
+      return (struct paging_write_result){.success = false};
+    }
+
+    const long padding_seek_offset = PAGING_PAGE_DATA_SIZE - page_data_size - 1;
+    const int padding_seek_result = fseek(pager->file, padding_seek_offset, SEEK_CUR);
+    if (padding_seek_result != 0) {
+      warn("Padding seek error");
       return (struct paging_write_result){.success = false};
     }
 
     const char data_padding_value = 0;
-    const size_t write_data_padding_count =
-        PAGING_PAGE_DATA_SIZE - page_data_size;
+    const size_t write_data_padding_count = 1;
     const size_t write_data_padding_result =
         fwrite(&data_padding_value, sizeof(data_padding_value),
                write_data_padding_count, pager->file);
     if (write_data_padding_result != write_data_padding_count) {
-      debug("Padding write error");
+      warn("Padding write error");
       return (struct paging_write_result){.success = false};
     }
 
@@ -276,7 +282,7 @@ struct paging_write_result paging_write(struct paging_pager *pager,
   }
 
   if (!paging_file_header_write(pager)) {
-    debug("File header write error");
+    warn("File header write error");
     return (struct paging_write_result){.success = false};
   }
 
@@ -298,7 +304,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
 
     const int seek_result = fseek(pager->file, seek_position, SEEK_SET);
     if (seek_result != 0) {
-      debug("Page header seek error");
+      warn("Page header seek error");
       return (struct paging_remove_result){.success = false};
     }
 
@@ -308,7 +314,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
     const size_t header_read_result =
         fread(&header, sizeof(header), header_read_count, pager->file);
     if (header_read_result != header_read_count) {
-      debug("Read page %" PRIu64 " header error", next_page_number);
+      warn("Read page %" PRIu64 " header error", next_page_number);
       return (struct paging_remove_result){.success = false};
     }
 
@@ -318,7 +324,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
 
     const int new_seek_result = fseek(pager->file, seek_position, SEEK_SET);
     if (new_seek_result != 0) {
-      debug("Page header seek error");
+      warn("Page header seek error");
       return (struct paging_remove_result){.success = false};
     }
 
@@ -326,7 +332,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
     const size_t header_write_result = fwrite(&new_header, sizeof(new_header),
                                               header_write_count, pager->file);
     if (header_write_result != header_write_count) {
-      debug("Write page %" PRIu64 " header error", next_page_number);
+      warn("Write page %" PRIu64 " header error", next_page_number);
       return (struct paging_remove_result){.success = false};
     }
 
@@ -342,7 +348,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
   }
 
   if (!paging_file_header_write(pager)) {
-    debug("Write file header error");
+    warn("Write file header error");
     return (struct paging_remove_result){.success = false};
   }
 
@@ -352,7 +358,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
 
     const int seek_read_result = fseek(pager->file, seek_position, SEEK_SET);
     if (seek_read_result != 0) {
-      debug("Previous page header seek error");
+      warn("Previous page header seek error");
       return (struct paging_remove_result){.success = false};
     }
 
@@ -362,7 +368,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
     const size_t header_read_result =
         fread(&header, sizeof(header), header_read_count, pager->file);
     if (header_read_result != header_read_count) {
-      debug("Read previous page header error");
+      warn("Read previous page header error");
       return (struct paging_remove_result){.success = false};
     }
 
@@ -370,7 +376,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
 
     const int seek_write_result = fseek(pager->file, seek_position, SEEK_SET);
     if (seek_write_result != 0) {
-      debug("Previous page header seek error");
+      warn("Previous page header seek error");
       return (struct paging_remove_result){.success = false};
     }
 
@@ -378,7 +384,7 @@ struct paging_remove_result paging_remove(struct paging_pager *pager,
     const size_t header_write_result =
         fwrite(&header, sizeof(header), header_write_count, pager->file);
     if (header_write_result != header_write_count) {
-      debug("Write previous page header error");
+      warn("Write previous page header error");
       return (struct paging_remove_result){.success = false};
     }
   }
@@ -403,7 +409,7 @@ static struct paging_read_result paging_read(const struct paging_pager *pager,
   while (next_continuation) {
     void *tmp_data = realloc(*data, PAGING_PAGE_DATA_SIZE * (pages_read + 1));
     if (tmp_data == NULL) {
-      debug("Re-alloc error");
+      warn("Re-alloc error");
       free(*data);
       return (struct paging_read_result){.success = false};
     }
@@ -414,7 +420,7 @@ static struct paging_read_result paging_read(const struct paging_pager *pager,
         paging_file_page_header_position(next_page_number);
     const int seek_result = fseek(pager->file, seek_position, SEEK_SET);
     if (seek_result != 0) {
-      debug("Page header seek error");
+      warn("Page header seek error");
       free(*data);
       return (struct paging_read_result){.success = false};
     }
@@ -425,7 +431,7 @@ static struct paging_read_result paging_read(const struct paging_pager *pager,
     const size_t header_read_result =
         fread(&header, sizeof(header), header_read_count, pager->file);
     if (header_read_result != header_read_count) {
-      debug("Read page %" PRIu64 " header error", next_page_number);
+      warn("Read page %" PRIu64 " header error", next_page_number);
       free(*data);
       return (struct paging_read_result){.success = false};
     }
@@ -436,7 +442,7 @@ static struct paging_read_result paging_read(const struct paging_pager *pager,
     const size_t data_read_result = fread(data_for_page, PAGING_PAGE_DATA_SIZE,
                                           data_read_count, pager->file);
     if (data_read_result != data_read_count) {
-      debug("Read page %" PRIu64 " data error", next_page_number);
+      warn("Read page %" PRIu64 " data error", next_page_number);
       free(*data);
       return (struct paging_read_result){.success = false};
     }
