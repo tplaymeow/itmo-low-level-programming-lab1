@@ -31,23 +31,23 @@ jobs:
         id: strings
         shell: bash
         run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
       - name: Configure CMake
         run: >
-          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          cmake -B ${{ steps.strings.outputs.build-dir }}
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
           -DCMAKE_BUILD_TYPE=Release
           -S ${{ github.workspace }}
 
       - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+        run: cmake --build ${{ steps.strings.outputs.build-dir }} --config Release
 
       - name: Upload build
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}.build
-          path: ${{ steps.strings.outputs.build-output-dir }}
+          path: ${{ steps.strings.outputs.build-dir }}
 
   create-db-file:
     strategy:
@@ -75,7 +75,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.os }}.build
-          path: ${{ steps.strings.outputs.build-output-dir }}
+          path: ${{ steps.strings.outputs.build-dir }}
 
       - name: Setup permission
         working-directory: ${{ steps.strings.outputs.build-dir }}
@@ -89,7 +89,7 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: ${{ matrix.os }}.file.db
-          path: ${{ steps.strings.outputs.build-output-dir }}/file.db
+          path: ${{ steps.strings.outputs.build-dir }}/file.db
 
   read-created-db-file:
     strategy:
@@ -117,7 +117,7 @@ jobs:
 
     needs: create-db-file
     runs-on: ${{ matrix.to-os }}
-    name: Read created DB file (${{ matrix.from-os }}-${{ matrix.to-os }})
+    name: Read created DB file (${{ matrix.from-os }} - ${{ matrix.to-os }})
     steps:
       - name: Set reusable strings
         id: strings
@@ -129,13 +129,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.to-os }}.build
-          path: ${{ steps.strings.outputs.build-output-dir }}
+          path: ${{ steps.strings.outputs.build-dir }}
 
       - name: Download DB file
         uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.from-os }}.file.db
-          path: ${{ steps.strings.outputs.build-output-dir }}/file.db
+          path: ${{ steps.strings.outputs.build-dir }}/file.db
 
       - name: Read db file
         working-directory: ${{ steps.strings.outputs.build-dir }}
