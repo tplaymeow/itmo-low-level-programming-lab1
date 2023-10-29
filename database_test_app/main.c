@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #include "database.h"
 #include "logger.h"
@@ -206,7 +207,7 @@ int test1(int argc, char **argv) {
 
   FILE *file = fopen(argv[2], "rb+");
   if (file == NULL) {
-    warn("File open failed");
+    warn("File open failed. Errno: %d", errno);
     return EXIT_FAILURE;
   }
 
