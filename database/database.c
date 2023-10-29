@@ -354,19 +354,19 @@ database_row_values_from_file_data(struct database_table table,
     switch (database_attributes_get(table.attributes, i).type) {
     case DATABASE_ATTRIBUTE_INTEGER: {
       const union database_attribute_value value = {
-          .integer = *((char *)data + data_offset)};
+          .integer = *(int64_t *)((char *)data + data_offset)};
       database_attribute_values_set(values, i, value);
       data_offset += integer_data_size;
     } break;
     case DATABASE_ATTRIBUTE_FLOATING_POINT: {
       const union database_attribute_value value = {
-          .floating_point = *((char *)data + data_offset)};
+          .floating_point = *(double *)((char *)data + data_offset)};
       database_attribute_values_set(values, i, value);
       data_offset += floating_point_data_size;
     } break;
     case DATABASE_ATTRIBUTE_BOOLEAN: {
       const union database_attribute_value value = {
-          .boolean = *((char *)data + data_offset)};
+          .boolean = *(uint64_t *)((char *)data + data_offset)};
       database_attribute_values_set(values, i, value);
       data_offset += boolean_data_size;
     } break;
