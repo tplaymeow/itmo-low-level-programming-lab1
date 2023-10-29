@@ -511,8 +511,14 @@ struct database_select_join_result database_select_join_next(
       right_result = database_select_row_next(database, right_table,
                                               right_where, right_result.row);
     }
+    // TODO: Think about fix. We can select first row when left result failed
     right_result =
         database_select_row_first(database, right_table, right_where);
+  }
+
+  // TODO: Think about fix. We can select first row when left result failed
+  if (right_result.success) {
+    database_row_destroy(right_result.row);
   }
 
   return (struct database_select_join_result){.success = false};
