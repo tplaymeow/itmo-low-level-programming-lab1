@@ -15,50 +15,50 @@ jobs:
 
       matrix:
         include:
-#          - os: ubuntu-latest
-#            c_compiler: gcc
-#            build_type: Release
-#            executable_path: ./database_test_app/database_test_app
-#          - os: ubuntu-latest
-#            c_compiler: clang
-#            build_type: Release
-#            executable_path: ./database_test_app/database_test_app
-#          - os: macos-latest
-#            c_compiler: clang
-#            build_type: Release
-#            executable_path: ./database_test_app/database_test_app
-#          - os: macos-latest
-#            c_compiler: gcc
-#            build_type: Release
-#            executable_path: ./database_test_app/database_test_app
-#          - os: windows-latest
-#            c_compiler: cl
-#            build_type: Release
-#            executable_path: ./database_test_app/Release/database_test_app.exe
-#          - os: ubuntu-latest
-#            c_compiler: gcc
-#            build_type: Debug
-#            sanitize-address: On
-#            sanitize-undefined: On
-#            executable_path: ./database_test_app/database_test_app
-#          - os: ubuntu-latest
-#            c_compiler: clang
-#            build_type: Debug
-#            sanitize-address: On
-#            sanitize-undefined: On
-#            executable_path: ./database_test_app/database_test_app
-#          - os: macos-latest
-#            c_compiler: clang
-#            build_type: Debug
-#            sanitize-address: On
-#            sanitize-undefined: On
-#            executable_path: ./database_test_app/database_test_app
-#          - os: macos-latest
-#            c_compiler: gcc
-#            build_type: Debug
-#            sanitize-address: On
-#            sanitize-undefined: On
-#            executable_path: ./database_test_app/database_test_app
+          - os: ubuntu-latest
+            c_compiler: gcc
+            build_type: Release
+            executable_path: ./database_test_app/database_test_app
+          - os: ubuntu-latest
+            c_compiler: clang
+            build_type: Release
+            executable_path: ./database_test_app/database_test_app
+          - os: macos-latest
+            c_compiler: clang
+            build_type: Release
+            executable_path: ./database_test_app/database_test_app
+          - os: macos-latest
+            c_compiler: gcc
+            build_type: Release
+            executable_path: ./database_test_app/database_test_app
+          - os: windows-latest
+            c_compiler: cl
+            build_type: Release
+            executable_path: ./database_test_app/Release/database_test_app.exe
+          - os: ubuntu-latest
+            c_compiler: gcc
+            build_type: Debug
+            sanitize-address: On
+            sanitize-undefined: On
+            executable_path: ./database_test_app/database_test_app
+          - os: ubuntu-latest
+            c_compiler: clang
+            build_type: Debug
+            sanitize-address: On
+            sanitize-undefined: On
+            executable_path: ./database_test_app/database_test_app
+          - os: macos-latest
+            c_compiler: clang
+            build_type: Debug
+            sanitize-address: On
+            sanitize-undefined: On
+            executable_path: ./database_test_app/database_test_app
+          - os: macos-latest
+            c_compiler: gcc
+            build_type: Debug
+            sanitize-address: On
+            sanitize-undefined: On
+            executable_path: ./database_test_app/database_test_app
           - os: windows-latest
             c_compiler: cl
             build_type: Release

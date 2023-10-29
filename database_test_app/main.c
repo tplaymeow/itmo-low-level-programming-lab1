@@ -196,8 +196,6 @@ void insert_post(struct database *database, struct database_table table,
 }
 
 int test1(int argc, char **argv) {
-  printf("====\n");
-
   enum mode mode;
   if (strcmp(argv[1], "MODE_ONLY_INSERTS") == 0) {
     mode = MODE_ONLY_INSERTS;
@@ -207,34 +205,24 @@ int test1(int argc, char **argv) {
     mode = MODE_ALL;
   }
 
-  printf("====\n");
-
   FILE *file = fopen(argv[2], "rb+");
   if (file == NULL) {
     warn("File open failed. Errno: %d", errno);
     return EXIT_FAILURE;
   }
 
-  printf("====\n");
-
   struct database *database = mode == MODE_ONLY_SELECTS
                                   ? database_init(file)
                                   : database_create_and_init(file);
-  printf("====\n");
-
   if (database == NULL) {
     warn("DB init failed");
     return EXIT_FAILURE;
   }
 
-  printf("====\n");
-
   struct database_table users_table =
       mode == MODE_ONLY_SELECTS
           ? database_get_table_with_name(database, "Users").table
           : create_users_table(database);
-
-  printf("====\n");
 
   if (mode != MODE_ONLY_SELECTS) {
     insert_user(database, users_table, 0, "Timur0", "12345", 1.5);
@@ -246,8 +234,6 @@ int test1(int argc, char **argv) {
     insert_user(database, users_table, 6, "Timur6", "12345", 3.5);
     insert_user(database, users_table, 7, "Timur7", "12345", 4.5);
   }
-
-  printf("====\n");
 
   if (mode != MODE_ONLY_INSERTS) {
     printf("\nSelecting all rows\n");
