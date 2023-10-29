@@ -260,7 +260,8 @@ struct paging_write_result paging_write(struct paging_pager *pager,
     }
 
     const long padding_seek_offset = PAGING_PAGE_DATA_SIZE - page_data_size - 1;
-    const int padding_seek_result = fseek(pager->file, padding_seek_offset, SEEK_CUR);
+    const int padding_seek_result =
+        fseek(pager->file, padding_seek_offset, SEEK_CUR);
     if (padding_seek_result != 0) {
       warn("Padding seek error");
       return (struct paging_write_result){.success = false};
