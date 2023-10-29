@@ -41,10 +41,9 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v3
-
-    - name: Checkout submodules
-      uses: textbook/git-checkout-submodule-action@master
-
+      with:
+        submodules: recursive
+        
     - name: Set reusable strings
       id: strings
       shell: bash
