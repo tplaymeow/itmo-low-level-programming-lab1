@@ -207,7 +207,6 @@ int test1(int argc, char **argv) {
 
   FILE *file = fopen(argv[2], "rb+");
   if (file == NULL) {
-    warn("File open failed. Errno: %d", errno);
     return EXIT_FAILURE;
   }
 
