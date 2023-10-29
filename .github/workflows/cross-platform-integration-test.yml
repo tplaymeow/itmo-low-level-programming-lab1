@@ -69,7 +69,7 @@ jobs:
         id: strings
         shell: bash
         run: |
-          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
       - name: Download build
         uses: actions/download-artifact@v3
@@ -78,9 +78,65 @@ jobs:
           path: ${{ steps.strings.outputs.build-output-dir }}
 
       - name: Setup permission
-        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        working-directory: ${{ steps.strings.outputs.build-dir }}
         run: chmod +x ${{ matrix.executable_path }}
 
       - name: Create db file
-        working-directory: ${{ steps.strings.outputs.build-output-dir }}
-        run: touch file.db && ${{ matrix.executable_path }} file.db && rm file.db
+        working-directory: ${{ steps.strings.outputs.build-dir }}
+        run: touch file.db && ${{ matrix.executable_path }} MODE_ONLY_INSERTS file.db
+
+      - name: Upload DB file
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}.file.db
+          path: ${{ steps.strings.outputs.build-output-dir }}/file.db
+
+  read-created-db-file:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - from-os: ubuntu-latest
+            to-os: macos-latest
+            executable_path: ./database_test_app/database_test_app
+          - from-os: ubuntu-latest
+            to-os: windows-latest
+            executable_path: ./database_test_app/Release/database_test_app.exe
+          - from-os: macos-latest
+            to-os: ubuntu-latest
+            executable_path: ./database_test_app/database_test_app
+          - from-os: macos-latest
+            to-os: windows-latest
+            executable_path: ./database_test_app/Release/database_test_app.exe
+          - from-os: windows-latest
+            to-os: ubuntu-latest
+            executable_path: ./database_test_app/database_test_app
+          - from-os: windows-latest
+            to-os: macos-latest
+            executable_path: ./database_test_app/database_test_app
+
+    needs: create-db-file
+    runs-on: ${{ matrix.to-os }}
+    name: Read created DB file (${{ matrix.from-os }}-${{ matrix.to-os }})
+    steps:
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Download build
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.to-os }}.build
+          path: ${{ steps.strings.outputs.build-output-dir }}
+
+      - name: Download DB file
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.from-os }}.file.db
+          path: ${{ steps.strings.outputs.build-output-dir }}/file.db
+
+      - name: Read db file
+        working-directory: ${{ steps.strings.outputs.build-dir }}
+        run: ${{ matrix.executable_path }} MODE_ONLY_SELECTS file.db
