@@ -135,13 +135,13 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: ${{ matrix.from-os }}.file.db
-          path: ${{ steps.strings.outputs.build-dir }}/file.db
+          path: ${{ steps.strings.outputs.build-dir }}
 
       - name: Setup permission
         working-directory: ${{ steps.strings.outputs.build-dir }}
         run: |
-          ls -lah && ls -lah file.db && chmod 777 ${{ matrix.executable_path }} && chmod 777 file.db
+          chmod 777 ${{ matrix.executable_path }} && chmod 777 file.db
 
       - name: Read db file
         working-directory: ${{ steps.strings.outputs.build-dir }}
-        run: ls -lah && ${{ matrix.executable_path }} MODE_ONLY_SELECTS file.db
+        run: ${{ matrix.executable_path }} MODE_ONLY_SELECTS file.db
