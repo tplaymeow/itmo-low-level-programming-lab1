@@ -77,7 +77,10 @@ jobs:
           name: ${{ matrix.os }}.build
           path: ${{ steps.strings.outputs.build-output-dir }}
 
+      - name: Setup permission
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: chmod +x ${{ matrix.executable_path }}
+
       - name: Create db file
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
-        run: |
-          touch file.db && ${{ matrix.executable_path }} file.db && rm file.db
+        run: touch file.db && ${{ matrix.executable_path }} file.db && rm file.db
