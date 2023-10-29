@@ -1,0 +1,83 @@
+name: Cross platform integration test
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            c_compiler: gcc
+          - os: macos-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: cl
+
+    runs-on: ${{ matrix.os }}
+    name: Build (${{ matrix.os }})
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          submodules: recursive
+
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Configure CMake
+        run: >
+          cmake -B ${{ steps.strings.outputs.build-output-dir }}
+          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+          -DCMAKE_BUILD_TYPE=Release
+          -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release
+
+      - name: Upload build
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.os }}.build
+          path: ${{ steps.strings.outputs.build-output-dir }}
+
+  create-db-file:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            executable_path: ./database_test_app/database_test_app
+          - os: macos-latest
+            executable_path: ./database_test_app/database_test_app
+          - os: windows-latest
+            executable_path: ./database_test_app/Release/database_test_app.exe
+
+    needs: build
+    runs-on: ${{ matrix.os }}
+    name: Create DB file (${{ matrix.os }})
+    steps:
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Download build
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ matrix.os }}.build
+          path: ${{ steps.strings.outputs.build-output-dir }}
+
+      - name: Create db file
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: |
+          touch file.db && ${{ matrix.executable_path }} file.db && rm file.db
