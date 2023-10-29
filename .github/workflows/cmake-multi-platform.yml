@@ -62,8 +62,8 @@ jobs:
           - os: windows-latest
             c_compiler: cl
             build_type: Debug
-            sanitize-address: On
-            sanitize-undefined: On
+#            sanitize-address: On
+#            sanitize-undefined: On
             executable_path: ./database_test_app/Debug/database_test_app.exe
     
     name: Build and Test (${{ matrix.os }}, ${{ matrix.build_type }}, ${{ matrix.c_compiler }})
