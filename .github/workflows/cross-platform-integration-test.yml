@@ -2,9 +2,9 @@ name: Cross platform integration test
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    branches: [ main ]
+    pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -141,8 +141,8 @@ jobs:
         working-directory: ${{ steps.strings.outputs.build-dir }}
         run: |
           ls -lah && 
-          chmod 777 ${{ matrix.executable_path }} && 
-          chmod 777 file.db
+          chmod 755 ${{ matrix.executable_path }} && 
+          chmod 755 file.db
 
       - name: Read db file
         working-directory: ${{ steps.strings.outputs.build-dir }}
