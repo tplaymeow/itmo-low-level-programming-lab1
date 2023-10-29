@@ -295,6 +295,11 @@ int test1(int argc, char **argv) {
                    (struct database_join){.left_attribute_position = 0,
                                           .right_attribute_position = 4});
 
+  database_table_destroy(users_table);
+  database_table_destroy(posts_table);
+  database_destroy(database);
+  fclose(file);
+
   return EXIT_SUCCESS;
 }
 
