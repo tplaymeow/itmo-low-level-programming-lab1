@@ -7,6 +7,7 @@ add_library(utils
         math_utils.h
         math_utils.c
 )
+add_sanitizers(utils)
 
 include(../scripts/filename.cmake)
 define_file_info(utils)

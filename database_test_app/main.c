@@ -8,14 +8,15 @@
 
 void print_all_rows(struct database *database, struct database_table table,
                     struct database_where where) {
-  printf("==========================================\n");
   for (size_t i = 0; i < table.attributes.count; i++) {
-    printf("%s,\t\t", database_attributes_get(table.attributes, i).name);
+    printf("%-15s", database_attributes_get(table.attributes, i).name);
   }
   printf("\n");
-  struct database_select_row_result select_result =
-      database_select_row_first(database, table, where);
-  while (select_result.success) {
+
+  for (struct database_select_row_result select_result =
+           database_select_row_first(database, table, where);
+       select_result.success; select_result = database_select_row_next(
+                                  database, table, where, select_result.row)) {
     for (size_t i = 0; i < table.attributes.count; i++) {
       const struct database_attribute attribute =
           database_attributes_get(table.attributes, i);
@@ -23,28 +24,23 @@ void print_all_rows(struct database *database, struct database_table table,
           database_attribute_values_get(select_result.row.values, i);
       switch (attribute.type) {
       case DATABASE_ATTRIBUTE_INTEGER:
-        printf("%" PRIi64 ",\t\t", value.integer);
+        printf("%-15" PRIi64, value.integer);
         break;
       case DATABASE_ATTRIBUTE_FLOATING_POINT:
-        printf("%lf,\t\t", value.floating_point);
+        printf("%-15lf", value.floating_point);
         break;
       case DATABASE_ATTRIBUTE_BOOLEAN:
-        printf("%s,\t\t", value.boolean ? "true" : "false");
+        printf("%-15s", value.boolean ? "true" : "false");
         break;
       case DATABASE_ATTRIBUTE_STRING:
-        printf("%s,\t\t", value.string);
+        printf("%-15s", value.string);
         break;
       default:
         break;
       }
     }
     printf("\n");
-    const struct database_select_row_result next_select_result =
-        database_select_row_next(database, table, where, select_result.row);
-    database_row_destroy(select_result.row);
-    select_result = next_select_result;
   }
-  printf("==========================================\n");
 }
 
 void print_all_joined(struct database *database,
@@ -53,20 +49,21 @@ void print_all_joined(struct database *database,
                       struct database_where left_where,
                       struct database_where right_where,
                       struct database_join join) {
-  printf("==========================================\n");
   for (size_t i = 0; i < left_table.attributes.count; i++) {
-    printf("%s.%s,\t\t", left_table.name,
-           database_attributes_get(left_table.attributes, i).name);
+    printf("%-15s", database_attributes_get(left_table.attributes, i).name);
   }
   for (size_t i = 0; i < right_table.attributes.count; i++) {
-    printf("%s.%s,\t\t", right_table.name,
-           database_attributes_get(right_table.attributes, i).name);
+    printf("%-15s", database_attributes_get(right_table.attributes, i).name);
   }
   printf("\n");
 
-  struct database_select_join_result select_result = database_select_join_first(
-      database, left_table, right_table, left_where, right_where, join);
-  while (select_result.success) {
+  for (struct database_select_join_result select_result =
+           database_select_join_first(database, left_table, right_table,
+                                      left_where, right_where, join);
+       select_result.success;
+       select_result = database_select_join_next(
+           database, left_table, right_table, left_where, right_where, join,
+           select_result.left_row, select_result.right_row)) {
     for (size_t i = 0; i < left_table.attributes.count; i++) {
       const struct database_attribute attribute =
           database_attributes_get(left_table.attributes, i);
@@ -74,16 +71,16 @@ void print_all_joined(struct database *database,
           database_attribute_values_get(select_result.left_row.values, i);
       switch (attribute.type) {
       case DATABASE_ATTRIBUTE_INTEGER:
-        printf("%" PRIi64 ",\t\t", value.integer);
+        printf("%-15" PRIi64, value.integer);
         break;
       case DATABASE_ATTRIBUTE_FLOATING_POINT:
-        printf("%lf,\t\t", value.floating_point);
+        printf("%-15lf", value.floating_point);
         break;
       case DATABASE_ATTRIBUTE_BOOLEAN:
-        printf("%s,\t\t", value.boolean ? "true" : "false");
+        printf("%-15s", value.boolean ? "true" : "false");
         break;
       case DATABASE_ATTRIBUTE_STRING:
-        printf("%s,\t\t", value.string);
+        printf("%-15s", value.string);
         break;
       default:
         break;
@@ -96,32 +93,23 @@ void print_all_joined(struct database *database,
           database_attribute_values_get(select_result.right_row.values, i);
       switch (attribute.type) {
       case DATABASE_ATTRIBUTE_INTEGER:
-        printf("%" PRIi64 ",\t\t", value.integer);
+        printf("%-15" PRIi64, value.integer);
         break;
       case DATABASE_ATTRIBUTE_FLOATING_POINT:
-        printf("%lf,\t\t", value.floating_point);
+        printf("%-15lf", value.floating_point);
         break;
       case DATABASE_ATTRIBUTE_BOOLEAN:
-        printf("%s,\t\t", value.boolean ? "true" : "false");
+        printf("%-15s", value.boolean ? "true" : "false");
         break;
       case DATABASE_ATTRIBUTE_STRING:
-        printf("%s,\t\t", value.string);
+        printf("%-15s", value.string);
         break;
       default:
         break;
       }
     }
     printf("\n");
-    const struct database_select_join_result next_select_result =
-        database_select_join_next(database, left_table, right_table, left_where,
-                                  right_where, join, select_result.left_row,
-                                  select_result.right_row);
-    // Fix destroying
-    // database_row_destroy(select_result.left_row);
-    // database_row_destroy(select_result.right_row);
-    select_result = next_select_result;
   }
-  printf("==========================================\n");
 }
 
 struct database_table create_users_table(struct database *database) {
