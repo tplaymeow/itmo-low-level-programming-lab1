@@ -35,7 +35,7 @@ jobs:
 
       - name: Configure CMake
         run: |
-          cmake -B ${{ steps.strings.outputs.build-dir }} \
+          cmake -B ${{ env.build-dir }} \
           -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
           -DCMAKE_BUILD_TYPE=Release \
           -S ${{ github.workspace }}
