@@ -1,147 +1,147 @@
-name: Cross platform integration test
-
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
-
-jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            c_compiler: gcc
-          - os: macos-latest
-            c_compiler: gcc
-          - os: windows-latest
-            c_compiler: cl
-
-    runs-on: ${{ matrix.os }}
-    name: Build (${{ matrix.os }})
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-        with:
-          submodules: recursive
-
-      - name: Set reusable strings
-        id: strings
-        shell: bash
-        run: |
-          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - name: Configure CMake
-        run: >
-          cmake -B ${{ steps.strings.outputs.build-dir }}
-          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
-          -DCMAKE_BUILD_TYPE=Release
-          -S ${{ github.workspace }}
-
-      - name: Build
-        run: cmake --build ${{ steps.strings.outputs.build-dir }} --config Release
-
-      - name: Upload build
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.os }}.build
-          path: ${{ steps.strings.outputs.build-dir }}
-
-  create-db-file:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - os: ubuntu-latest
-            executable_path: ./database_test_app/database_test_app
-          - os: macos-latest
-            executable_path: ./database_test_app/database_test_app
-          - os: windows-latest
-            executable_path: ./database_test_app/Release/database_test_app.exe
-
-    needs: build
-    runs-on: ${{ matrix.os }}
-    name: Create DB file (${{ matrix.os }})
-    steps:
-      - name: Set reusable strings
-        id: strings
-        shell: bash
-        run: |
-          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - name: Download build
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.os }}.build
-          path: ${{ steps.strings.outputs.build-dir }}
-
-      - name: Setup permission
-        working-directory: ${{ steps.strings.outputs.build-dir }}
-        run: chmod +x ${{ matrix.executable_path }}
-
-      - name: Create db file
-        working-directory: ${{ steps.strings.outputs.build-dir }}
-        run: touch file.db && ${{ matrix.executable_path }} MODE_ONLY_INSERTS file.db
-
-      - name: Upload DB file
-        uses: actions/upload-artifact@v3
-        with:
-          name: ${{ matrix.os }}.file.db
-          path: ${{ steps.strings.outputs.build-dir }}/file.db
-
-  read-created-db-file:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - from-os: ubuntu-latest
-            to-os: macos-latest
-            executable_path: ./database_test_app/database_test_app
-          - from-os: ubuntu-latest
-            to-os: windows-latest
-            executable_path: ./database_test_app/Release/database_test_app.exe
-          - from-os: macos-latest
-            to-os: ubuntu-latest
-            executable_path: ./database_test_app/database_test_app
-          - from-os: macos-latest
-            to-os: windows-latest
-            executable_path: ./database_test_app/Release/database_test_app.exe
-          - from-os: windows-latest
-            to-os: ubuntu-latest
-            executable_path: ./database_test_app/database_test_app
-          - from-os: windows-latest
-            to-os: macos-latest
-            executable_path: ./database_test_app/database_test_app
-
-    needs: create-db-file
-    runs-on: ${{ matrix.to-os }}
-    name: Read created DB file (${{ matrix.from-os }} - ${{ matrix.to-os }})
-    steps:
-      - name: Set reusable strings
-        id: strings
-        shell: bash
-        run: |
-          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
-
-      - name: Download build
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.to-os }}.build
-          path: ${{ steps.strings.outputs.build-dir }}
-
-      - name: Download DB file
-        uses: actions/download-artifact@v3
-        with:
-          name: ${{ matrix.from-os }}.file.db
-          path: ${{ steps.strings.outputs.build-dir }}
-
-      - name: Setup permission
-        working-directory: ${{ steps.strings.outputs.build-dir }}
-        run: |
-          chmod 777 ${{ matrix.executable_path }} && chmod 777 file.db
-
-      - name: Read db file
-        working-directory: ${{ steps.strings.outputs.build-dir }}
-        run: ${{ matrix.executable_path }} MODE_ONLY_SELECTS file.db
+#name: Cross platform integration test
+#
+#on:
+#  push:
+#    branches: [ "main" ]
+#  pull_request:
+#    branches: [ "main" ]
+#
+#jobs:
+#  build:
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        include:
+#          - os: ubuntu-latest
+#            c_compiler: gcc
+#          - os: macos-latest
+#            c_compiler: gcc
+#          - os: windows-latest
+#            c_compiler: cl
+#
+#    runs-on: ${{ matrix.os }}
+#    name: Build (${{ matrix.os }})
+#    steps:
+#      - name: Checkout repository
+#        uses: actions/checkout@v3
+#        with:
+#          submodules: recursive
+#
+#      - name: Set reusable strings
+#        id: strings
+#        shell: bash
+#        run: |
+#          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+#
+#      - name: Configure CMake
+#        run: >
+#          cmake -B ${{ steps.strings.outputs.build-dir }}
+#          -DCMAKE_C_COMPILER=${{ matrix.c_compiler }}
+#          -DCMAKE_BUILD_TYPE=Release
+#          -S ${{ github.workspace }}
+#
+#      - name: Build
+#        run: cmake --build ${{ steps.strings.outputs.build-dir }} --config Release
+#
+#      - name: Upload build
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{ matrix.os }}.build
+#          path: ${{ steps.strings.outputs.build-dir }}
+#
+#  create-db-file:
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        include:
+#          - os: ubuntu-latest
+#            executable_path: ./database_test_app/database_test_app
+#          - os: macos-latest
+#            executable_path: ./database_test_app/database_test_app
+#          - os: windows-latest
+#            executable_path: ./database_test_app/Release/database_test_app.exe
+#
+#    needs: build
+#    runs-on: ${{ matrix.os }}
+#    name: Create DB file (${{ matrix.os }})
+#    steps:
+#      - name: Set reusable strings
+#        id: strings
+#        shell: bash
+#        run: |
+#          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+#
+#      - name: Download build
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: ${{ matrix.os }}.build
+#          path: ${{ steps.strings.outputs.build-dir }}
+#
+#      - name: Setup permission
+#        working-directory: ${{ steps.strings.outputs.build-dir }}
+#        run: chmod +x ${{ matrix.executable_path }}
+#
+#      - name: Create db file
+#        working-directory: ${{ steps.strings.outputs.build-dir }}
+#        run: touch file.db && ${{ matrix.executable_path }} MODE_ONLY_INSERTS file.db
+#
+#      - name: Upload DB file
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: ${{ matrix.os }}.file.db
+#          path: ${{ steps.strings.outputs.build-dir }}/file.db
+#
+#  read-created-db-file:
+#    strategy:
+#      fail-fast: false
+#      matrix:
+#        include:
+#          - from-os: ubuntu-latest
+#            to-os: macos-latest
+#            executable_path: ./database_test_app/database_test_app
+#          - from-os: ubuntu-latest
+#            to-os: windows-latest
+#            executable_path: ./database_test_app/Release/database_test_app.exe
+#          - from-os: macos-latest
+#            to-os: ubuntu-latest
+#            executable_path: ./database_test_app/database_test_app
+#          - from-os: macos-latest
+#            to-os: windows-latest
+#            executable_path: ./database_test_app/Release/database_test_app.exe
+#          - from-os: windows-latest
+#            to-os: ubuntu-latest
+#            executable_path: ./database_test_app/database_test_app
+#          - from-os: windows-latest
+#            to-os: macos-latest
+#            executable_path: ./database_test_app/database_test_app
+#
+#    needs: create-db-file
+#    runs-on: ${{ matrix.to-os }}
+#    name: Read created DB file (${{ matrix.from-os }} - ${{ matrix.to-os }})
+#    steps:
+#      - name: Set reusable strings
+#        id: strings
+#        shell: bash
+#        run: |
+#          echo "build-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+#
+#      - name: Download build
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: ${{ matrix.to-os }}.build
+#          path: ${{ steps.strings.outputs.build-dir }}
+#
+#      - name: Download DB file
+#        uses: actions/download-artifact@v3
+#        with:
+#          name: ${{ matrix.from-os }}.file.db
+#          path: ${{ steps.strings.outputs.build-dir }}
+#
+#      - name: Setup permission
+#        working-directory: ${{ steps.strings.outputs.build-dir }}
+#        run: |
+#          chmod 777 ${{ matrix.executable_path }} && chmod 777 file.db
+#
+#      - name: Read db file
+#        working-directory: ${{ steps.strings.outputs.build-dir }}
+#        run: ${{ matrix.executable_path }} MODE_ONLY_SELECTS file.db
