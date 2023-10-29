@@ -206,7 +206,7 @@ int test1(int argc, char **argv) {
 
   FILE *file = fopen(argv[2], "rb+");
   if (file == NULL) {
-    debug("File open failed");
+    warn("File open failed");
     return EXIT_FAILURE;
   }
 
@@ -214,7 +214,7 @@ int test1(int argc, char **argv) {
                                   ? database_init(file)
                                   : database_create_and_init(file);
   if (database == NULL) {
-    debug("DB init failed");
+    warn("DB init failed");
     return EXIT_FAILURE;
   }
 

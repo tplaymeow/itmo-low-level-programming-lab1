@@ -139,7 +139,9 @@ jobs:
 
       - name: Setup permission
         working-directory: ${{ steps.strings.outputs.build-dir }}
-        run: chmod +x ${{ matrix.executable_path }}
+        run: |
+          chmod 777 ${{ matrix.executable_path }}
+          chmod 777 file.db
 
       - name: Read db file
         working-directory: ${{ steps.strings.outputs.build-dir }}
