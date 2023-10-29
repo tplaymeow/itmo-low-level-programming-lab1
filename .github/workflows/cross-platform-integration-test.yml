@@ -137,6 +137,10 @@ jobs:
           name: ${{ matrix.from-os }}.file.db
           path: ${{ steps.strings.outputs.build-dir }}/file.db
 
+      - name: Setup permission
+        working-directory: ${{ steps.strings.outputs.build-dir }}
+        run: chmod +x ${{ matrix.executable_path }}
+
       - name: Read db file
         working-directory: ${{ steps.strings.outputs.build-dir }}
         run: ${{ matrix.executable_path }} MODE_ONLY_SELECTS file.db
