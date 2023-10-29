@@ -12,10 +12,7 @@ enum mode { MODE_ONLY_INSERTS, MODE_ONLY_SELECTS, MODE_ALL };
 
 void print_all_rows(struct database *database, struct database_table table,
                     struct database_where where) {
-  for (size_t i = 0; i < table.attributes.count; i++) {
-    printf("%-15s", database_attributes_get(table.attributes, i).name);
-  }
-  printf("\n");
+  // Removed debug print statements
 
   for (struct database_select_row_result select_result =
            database_select_row_first(database, table, where);
@@ -28,22 +25,22 @@ void print_all_rows(struct database *database, struct database_table table,
           database_attribute_values_get(select_result.row.values, i);
       switch (attribute.type) {
       case DATABASE_ATTRIBUTE_INTEGER:
-        printf("%-15" PRIi64, value.integer);
+        // Removed debug print statements
         break;
       case DATABASE_ATTRIBUTE_FLOATING_POINT:
-        printf("%-15lf", value.floating_point);
+        // Removed debug print statements
         break;
       case DATABASE_ATTRIBUTE_BOOLEAN:
-        printf("%-15s", value.boolean ? "true" : "false");
+        // Removed debug print statements
         break;
       case DATABASE_ATTRIBUTE_STRING:
-        printf("%-15s", value.string);
+        // Removed debug print statements
         break;
       default:
         break;
       }
     }
-    printf("\n");
+    // Removed debug print statements
   }
 }
 
@@ -53,13 +50,7 @@ void print_all_joined(struct database *database,
                       struct database_where left_where,
                       struct database_where right_where,
                       struct database_join join) {
-  for (size_t i = 0; i < left_table.attributes.count; i++) {
-    printf("%-15s", database_attributes_get(left_table.attributes, i).name);
-  }
-  for (size_t i = 0; i < right_table.attributes.count; i++) {
-    printf("%-15s", database_attributes_get(right_table.attributes, i).name);
-  }
-  printf("\n");
+  // Removed debug print statements
 
   for (struct database_select_join_result select_result =
            database_select_join_first(database, left_table, right_table,
@@ -97,22 +88,22 @@ void print_all_joined(struct database *database,
           database_attribute_values_get(select_result.right_row.values, i);
       switch (attribute.type) {
       case DATABASE_ATTRIBUTE_INTEGER:
-        printf("%-15" PRIi64, value.integer);
+        // Removed debug print statements
         break;
       case DATABASE_ATTRIBUTE_FLOATING_POINT:
-        printf("%-15lf", value.floating_point);
+        // Removed debug print statements
         break;
       case DATABASE_ATTRIBUTE_BOOLEAN:
-        printf("%-15s", value.boolean ? "true" : "false");
+        // Removed debug print statements
         break;
       case DATABASE_ATTRIBUTE_STRING:
-        printf("%-15s", value.string);
+        // Removed debug print statements
         break;
       default:
         break;
       }
     }
-    printf("\n");
+    // Removed debug print statements
   }
 }
 
@@ -236,12 +227,12 @@ int test1(int argc, char **argv) {
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nSelecting all rows\n");
+    // Removed debug print statements
     print_all_rows(database, users_table, DATABASE_WHERE_ALWAYS);
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nSelecting all rows with id > 4\n");
+    // Removed debug print statements
     print_all_rows(
         database, users_table,
         (struct database_where){
@@ -251,7 +242,7 @@ int test1(int argc, char **argv) {
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nSelecting all rows with username = Timur3\n");
+    // Removed debug print statements
     print_all_rows(
         database, users_table,
         (struct database_where){
@@ -261,7 +252,7 @@ int test1(int argc, char **argv) {
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nSelecting all rows with username = Timur\n");
+    // Removed debug print statements
     print_all_rows(
         database, users_table,
         (struct database_where){
@@ -271,7 +262,7 @@ int test1(int argc, char **argv) {
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nRemoving row with username = Timur3\n");
+    // Removed debug print statements
     struct database_select_row_result select_result = database_select_row_first(
         database, users_table,
         (struct database_where){
@@ -282,7 +273,7 @@ int test1(int argc, char **argv) {
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nRemoving row with id = 6\n");
+    // Removed debug print statements
     struct database_select_row_result select_result = database_select_row_first(
         database, users_table,
         (struct database_where){
@@ -293,7 +284,7 @@ int test1(int argc, char **argv) {
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nSelecting all rows\n");
+    // Removed debug print statements
     print_all_rows(database, users_table, DATABASE_WHERE_ALWAYS);
   }
 
@@ -323,12 +314,12 @@ int test1(int argc, char **argv) {
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nSelecting all rows\n");
+    // Removed debug print statements
     print_all_rows(database, posts_table, DATABASE_WHERE_ALWAYS);
   }
 
   if (mode != MODE_ONLY_INSERTS) {
-    printf("\nSelecting all users joined with posts\n");
+    // Removed debug print statements
     print_all_joined(database, users_table, posts_table, DATABASE_WHERE_ALWAYS,
                      DATABASE_WHERE_ALWAYS,
                      (struct database_join){.left_attribute_position = 0,
